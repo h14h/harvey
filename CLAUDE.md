@@ -104,3 +104,41 @@ bun --hot ./index.ts
 ```
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+
+## GitHub Issues
+
+Project tasks are tracked in GitHub issues. Use the `gh` CLI to fetch and read them.
+
+```sh
+# List all open issues
+gh issue list
+
+# List issues by phase label
+gh issue list --label phase-1-foundation
+gh issue list --label phase-2-core
+gh issue list --label phase-5-tui
+
+# List issues needing discussion
+gh issue list --label needs-discussion
+
+# View a specific issue
+gh issue view 15
+
+# View issue in browser
+gh issue view 15 --web
+```
+
+### Issue Labels
+
+| Label | Description |
+|-------|-------------|
+| `phase-1-foundation` | Project setup, types, database |
+| `phase-2-core` | Config, OpenAI, context assembly |
+| `phase-3-summarization` | Auto-summarization, titles |
+| `phase-4-data` | Repository implementations |
+| `phase-5-tui` | Terminal UI |
+| `phase-6-polish` | Search, error handling, testing |
+| `phase-7-distribution` | Builds
+
+ and docs |
+| `needs-discussion` | Requires team input before starting |
