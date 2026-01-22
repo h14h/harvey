@@ -1,4 +1,5 @@
 <!-- SYNC: This file must be kept in sync with AGENTS.md -->
+<!-- NOTE: Any update to either file must be mirrored in the other in the same change. -->
 
 Default to using Bun instead of Node.js.
 
@@ -108,7 +109,7 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 ## GitHub Issues
 
-Project tasks are tracked in GitHub issues. Use the `gh` CLI to fetch and read them.
+Project tasks are tracked in GitHub issues. Use the `gh` CLI to fetch and read them, and always run `gh` commands from the harvey project root (not from the `wiki/` submodule).
 
 ```sh
 # List all open issues
