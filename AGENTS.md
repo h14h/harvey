@@ -132,6 +132,8 @@ gh issue view 15 --web
 
 **Important:** Always use `--comments` when reading issues. Comments take precedence over the issue description — they contain corrections, additional context, and clarifications added after the issue was created.
 
+**Important:** Only work on open issues. Do not use `--state closed` or `--state all` when listing issues — the default behavior (open issues only) is correct.
+
 ### Issue Labels
 
 | Label | Description |
