@@ -1,4 +1,4 @@
-<!-- SYNC: This file must be kept in sync with AGENTS.md -->
+<!-- SYNC: This file must be kept in sync with CLAUDE.md -->
 
 Default to using Bun instead of Node.js.
 
