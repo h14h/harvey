@@ -122,12 +122,14 @@ gh issue list --label phase-5-tui
 # List issues needing discussion
 gh issue list --label needs-discussion
 
-# View a specific issue
-gh issue view 15
+# View a specific issue (always include comments)
+gh issue view 15 --comments
 
 # View issue in browser
 gh issue view 15 --web
 ```
+
+**Important:** Always use `--comments` when reading issues. Comments take precedence over the issue description — they contain corrections, additional context, and clarifications added after the issue was created.
 
 ### Issue Labels
 
