@@ -3,26 +3,26 @@
  */
 
 import { useCallback, useRef } from "react";
-import { useAppStore, useInputTextActions, useStreaming } from "../store";
-import { streamChatCompletion, createOpenAIClientFromConfig } from "../../services/openai";
 import { assembleContext, type ContextInput } from "../../services/context";
-import { logError, getUserFriendlyMessage } from "../../utils/errors";
+import { createOpenAIClientFromConfig, streamChatCompletion } from "../../services/openai";
 import type { Message } from "../../types";
+import { getUserFriendlyMessage, logError } from "../../utils/errors";
+import { useAppStore, useInputTextActions, useStreaming } from "../store";
 
 interface SendMessageOptions {
-  /** The user message to send */
-  content: string;
-  /** The current chat ID */
-  chatId: number | null;
-  /** Context for the OpenAI request */
-  contextInput: ContextInput;
+	/** The user message to send */
+	content: string;
+	/** The current chat ID */
+	chatId: number | null;
+	/** Context for the OpenAI request */
+	contextInput: ContextInput;
 }
 
 interface UseSendMessageReturn {
-  /** Send a message and stream the response */
-  sendMessage: (options: SendMessageOptions) => Promise<void>;
-  /** Whether currently sending/streaming */
-  isSending: boolean;
+	/** Send a message and stream the response */
+	sendMessage: (options: SendMessageOptions) => Promise<void>;
+	/** Whether currently sending/streaming */
+	isSending: boolean;
 }
 
 /**
@@ -35,86 +35,96 @@ interface UseSendMessageReturn {
  * 4. Save completed messages to database (TODO)
  */
 export function useSendMessage(): UseSendMessageReturn {
-  const { state, dispatch } = useAppStore();
-  const { clear } = useInputTextActions();
-  const { startStreaming, appendStreaming, completeStreaming, cancelStreaming } = useStreaming();
-  const isSendingRef = useRef(false);
+	const { state, dispatch } = useAppStore();
+	const { clear } = useInputTextActions();
+	const { startStreaming, appendStreaming, completeStreaming, cancelStreaming } = useStreaming();
+	const isSendingRef = useRef(false);
 
-  const sendMessage = useCallback(async (options: SendMessageOptions) => {
-    const { content, chatId, contextInput } = options;
+	const sendMessage = useCallback(
+		async (options: SendMessageOptions) => {
+			const { content, chatId, contextInput } = options;
 
-    if (!content.trim() || isSendingRef.current) {
-      return;
-    }
+			if (!content.trim() || isSendingRef.current) {
+				return;
+			}
 
-    // Check if we have a chat selected
-    if (!chatId) {
-      dispatch({ type: "setError", error: "No chat selected" });
-      return;
-    }
+			// Check if we have a chat selected
+			if (!chatId) {
+				dispatch({ type: "setError", error: "No chat selected" });
+				return;
+			}
 
-    isSendingRef.current = true;
+			isSendingRef.current = true;
 
-    try {
-      // Create user message
-      const userMessage: Message = {
-        id: Date.now(),
-        chatId,
-        role: "user",
-        content: content.trim(),
-        turnNumber: state.messages.length + 1,
-        createdAt: Date.now(),
-      };
+			try {
+				// Create user message
+				const userMessage: Message = {
+					id: Date.now(),
+					chatId,
+					role: "user",
+					content: content.trim(),
+					turnNumber: state.messages.length + 1,
+					createdAt: Date.now(),
+				};
 
-      // Add user message to the display
-      dispatch({ type: "setMessages", messages: [...state.messages, userMessage] });
+				// Add user message to the display
+				dispatch({ type: "setMessages", messages: [...state.messages, userMessage] });
 
-      // Clear input
-      clear();
+				// Clear input
+				clear();
 
-      // Start streaming
-      startStreaming();
+				// Start streaming
+				startStreaming();
 
-      // Get OpenAI client and assemble context
-      const client = await createOpenAIClientFromConfig();
-      const messages = assembleContext(contextInput);
+				// Get OpenAI client and assemble context
+				const client = await createOpenAIClientFromConfig();
+				const messages = assembleContext(contextInput);
 
-      // Stream the response
-      let streamedContent = "";
-      for await (const chunk of streamChatCompletion(client, messages)) {
-        streamedContent += chunk;
-        appendStreaming(chunk);
-      }
+				// Stream the response
+				let streamedContent = "";
+				for await (const chunk of streamChatCompletion(client, messages)) {
+					streamedContent += chunk;
+					appendStreaming(chunk);
+				}
 
-      // Create assistant message
-      const assistantMessage: Message = {
-        id: Date.now() + 1,
-        chatId,
-        role: "assistant",
-        content: streamedContent,
-        turnNumber: userMessage.turnNumber,
-        createdAt: Date.now(),
-      };
+				// Create assistant message
+				const assistantMessage: Message = {
+					id: Date.now() + 1,
+					chatId,
+					role: "assistant",
+					content: streamedContent,
+					turnNumber: userMessage.turnNumber,
+					createdAt: Date.now(),
+				};
 
-      // Complete streaming - adds message to the list
-      completeStreaming(assistantMessage);
+				// Complete streaming - adds message to the list
+				completeStreaming(assistantMessage);
 
-      // TODO: Save messages to database
-      // TODO: Increment turn count
-      // TODO: Check if summarization is needed
+				// TODO: Save messages to database
+				// TODO: Increment turn count
+				// TODO: Check if summarization is needed
+			} catch (error) {
+				cancelStreaming();
+				logError(error, "useSendMessage");
+				const userMessage = getUserFriendlyMessage(error);
+				dispatch({ type: "setError", error: userMessage });
+			} finally {
+				isSendingRef.current = false;
+			}
+		},
+		[
+			state.messages,
+			dispatch,
+			clear,
+			startStreaming,
+			appendStreaming,
+			completeStreaming,
+			cancelStreaming,
+		]
+	);
 
-    } catch (error) {
-      cancelStreaming();
-      logError(error, "useSendMessage");
-      const userMessage = getUserFriendlyMessage(error);
-      dispatch({ type: "setError", error: userMessage });
-    } finally {
-      isSendingRef.current = false;
-    }
-  }, [state.messages, dispatch, clear, startStreaming, appendStreaming, completeStreaming, cancelStreaming]);
-
-  return {
-    sendMessage,
-    isSending: isSendingRef.current || state.streaming.isStreaming,
-  };
+	return {
+		sendMessage,
+		isSending: isSendingRef.current || state.streaming.isStreaming,
+	};
 }

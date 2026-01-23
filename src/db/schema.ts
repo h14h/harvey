@@ -46,7 +46,7 @@ CREATE INDEX IF NOT EXISTS idx_summaries_chat_type_turn
 `;
 
 export function applySchema(db: Database): void {
-  db.exec(schemaSql);
+	db.exec(schemaSql);
 }
 
 export { schemaSql };

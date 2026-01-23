@@ -1,36 +1,44 @@
 {
-  "name": "harvey",
-  "version": "0.1.0",
-  "description": "CLI application for long-running AI conversations with intelligent context management",
-  "type": "module",
-  "module": "src/index.tsx",
-  "bin": {
-    "harvey": "./src/index.tsx"
-  },
-  "scripts": {
-    "start": "bun ./src/index.tsx",
-    "dev": "bun --hot ./src/index.tsx",
-    "test": "bun test",
-    "lint": "bun test",
-    "build": "bun ./scripts/build.ts",
-    "postinstall": "mkdir -p ~/.local/bin 2>/dev/null; ln -sf \"$PWD/src/index.tsx\" ~/.local/bin/harvey && chmod +x ~/.local/bin/harvey || true",
-    "typecheck": "tsc --noEmit"
-  },
-  "engines": {
-    "bun": ">=1.0.0"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "ink-testing-library": "^4.0.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "ink": "^6.6.0",
-    "js-tiktoken": "^1.0.21",
-    "openai": "^6.16.0",
-    "react": "^19.2.3",
-    "react-reconciler": "^0.33.0"
-  }
+	"name": "harvey",
+	"version": "0.1.0",
+	"description": "CLI application for long-running AI conversations with intelligent context management",
+	"type": "module",
+	"module": "src/index.tsx",
+	"bin": {
+		"harvey": "./src/index.tsx"
+	},
+	"scripts": {
+		"start": "bun ./src/index.tsx",
+		"dev": "bun --hot ./src/index.tsx",
+		"test": "bun test",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write .",
+		"check": "biome check . && bun run typecheck",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ./scripts/build.ts",
+		"postinstall": "mkdir -p ~/.local/bin 2>/dev/null; ln -sf \"$PWD/src/index.tsx\" ~/.local/bin/harvey && chmod +x ~/.local/bin/harvey || true && simple-git-hooks"
+	},
+	"simple-git-hooks": {
+		"pre-commit": "bun run check"
+	},
+	"engines": {
+		"bun": ">=1.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.11",
+		"@types/bun": "latest",
+		"ink-testing-library": "^4.0.0",
+		"simple-git-hooks": "^2.13.1"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"ink": "^6.6.0",
+		"js-tiktoken": "^1.0.21",
+		"openai": "^6.16.0",
+		"react": "^19.2.3",
+		"react-reconciler": "^0.33.0"
+	}
 }
