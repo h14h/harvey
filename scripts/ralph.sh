@@ -87,7 +87,7 @@ while :; do
     break
   fi
 
-  gh issue view --comments "$issue_number" --json title,body,comments --jq '.title, "", .body, (if (.comments | length) > 0 then "", "### Comments (IMPORTANT!!)", "", ((.comments[].body) | ., "") else empty end)' | cat | codex exec --dangerously-bypass-approvals-and-sandbox -
+  gh issue view --comments "$issue_number" --json title,body,comments --jq '.title, "", .body, (if (.comments | length) > 0 then "", "### Comments (IMPORTANT!!)", "", ((.comments[].body) | ., "") else empty end)' | cat | claude -p --dangerously-skip-permissions
 done
 
 cat << "EOF"
