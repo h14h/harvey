@@ -80,7 +80,7 @@ gh project item-edit \
   --field-id "$status_field_id" \
   --single-select-option-id "$in_progress_option_id"
 
-items=$(
+prompt=$(
   gh issue view \
     --comments "$issue_number" \
     --json title,body,comments \
@@ -94,7 +94,7 @@ while :; do
     break
   fi
 
-  echo $issues | claude --dangerously-skip-permissions
+  echo $prompt | claude --dangerously-skip-permissions
 done
 
 cat << "EOF"
