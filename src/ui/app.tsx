@@ -17,6 +17,7 @@ import { AnchorModal } from "./components/AnchorModal";
 import { Toast } from "./components/Toast";
 import { useSendMessage, useContextUsage, useToasts } from "./hooks";
 import { logError, getUserFriendlyMessage, getRecoverySuggestion } from "../utils/errors";
+import { searchChatsWithFzf } from "../utils/fzf";
 import type { Chat } from "../types";
 
 /**
@@ -54,6 +55,9 @@ function AppInner() {
         break;
       case "newChat":
         dispatch({ type: "openModal", modal: "new-chat" });
+        break;
+      case "searchChats":
+        handleSearchChats();
         break;
       case "editGlobalTone":
         dispatch({ type: "openModal", modal: "edit-tone" });
@@ -134,7 +138,7 @@ function AppInner() {
         inputActions.clear();
         break;
     }
-  }, [state.focus, state.inputText, state.activeModal, state.streaming.isStreaming, state.selectedChatId, state.chats, state.messages, dispatch, exit, inputActions]);
+  }, [state.focus, state.inputText, state.activeModal, state.streaming.isStreaming, state.selectedChatId, state.chats, state.messages, dispatch, exit, inputActions, handleSearchChats]);
 
   /**
    * Set up the KeyHandler with our bindings.
@@ -214,6 +218,37 @@ function AppInner() {
       setIsLoading(false);
     }
   }, [dispatch]);
+
+  /**
+   * Handle searching chats using fzf.
+   * Spawns fzf with the chat list and navigates to selected chat.
+   */
+  const handleSearchChats = useCallback(async () => {
+    if (state.chats.length === 0) {
+      dispatch({
+        type: "setError",
+        error: "No chats to search. Create a chat first with 'n'.",
+      });
+      return;
+    }
+
+    try {
+      const result = await searchChatsWithFzf(state.chats);
+
+      if (result.error) {
+        dispatch({ type: "setError", error: result.errorMessage ?? "Search failed" });
+        return;
+      }
+
+      if (result.chat) {
+        dispatch({ type: "selectChat", chatId: result.chat.id });
+      }
+    } catch (error) {
+      logError(error, "handleSearchChats");
+      const userMessage = getUserFriendlyMessage(error);
+      dispatch({ type: "setError", error: userMessage });
+    }
+  }, [state.chats, dispatch]);
 
   /**
    * Handle saving a chat's anchor prompt.
