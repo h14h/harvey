@@ -4,6 +4,7 @@
 
 import { Box, Text, useInput } from "ink";
 import { useModal } from "../store";
+import { isBackspace, isPrintableChar } from "../utils/input";
 
 interface NewChatModalProps {
 	onSubmit: (anchorPrompt: string) => void;
@@ -40,13 +41,13 @@ export function NewChatModal({ onSubmit }: NewChatModalProps) {
 				return;
 			}
 
-			if (key.backspace || (key.ctrl && input === "h")) {
+			if (isBackspace(input, key)) {
 				deleteModalInputChar();
 				return;
 			}
 
-			// Handle regular character input
-			if (input) {
+			// Handle regular character input (ignore control characters)
+			if (isPrintableChar(input)) {
 				appendModalInput(input);
 			}
 		},

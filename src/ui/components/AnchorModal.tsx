@@ -5,6 +5,7 @@
 import { Box, Text, useInput } from "ink";
 import React, { useEffect } from "react";
 import { useModal, useSelectedChat } from "../store";
+import { isBackspace, isPrintableChar } from "../utils/input";
 
 interface AnchorModalProps {
 	onSave: (anchorPrompt: string) => void;
@@ -75,13 +76,13 @@ export function AnchorModal({ onSave }: AnchorModalProps) {
 				return;
 			}
 
-			if (key.backspace || (key.ctrl && input === "h")) {
+			if (isBackspace(input, key)) {
 				deleteModalInputChar();
 				return;
 			}
 
-			// Handle regular character input
-			if (input) {
+			// Handle regular character input (ignore control characters)
+			if (isPrintableChar(input)) {
 				appendModalInput(input);
 			}
 		},

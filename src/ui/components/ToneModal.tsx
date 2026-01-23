@@ -5,6 +5,7 @@
 import { Box, Text, useInput } from "ink";
 import React, { useEffect } from "react";
 import { useModal } from "../store";
+import { isBackspace, isPrintableChar } from "../utils/input";
 
 interface ToneModalProps {
 	currentTone: string | null;
@@ -69,13 +70,13 @@ export function ToneModal({ currentTone, onSave }: ToneModalProps) {
 				return;
 			}
 
-			if (key.backspace || (key.ctrl && input === "h")) {
+			if (isBackspace(input, key)) {
 				deleteModalInputChar();
 				return;
 			}
 
-			// Handle regular character input
-			if (input) {
+			// Handle regular character input (ignore control characters)
+			if (isPrintableChar(input)) {
 				appendModalInput(input);
 			}
 		},
