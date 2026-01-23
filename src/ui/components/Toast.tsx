@@ -72,14 +72,7 @@ export function Toast({ message, type = "info", duration = 3000, onDismiss }: To
 	const icon = getToastIcon(type);
 
 	return (
-		<Box
-			position="absolute"
-			bottom={1}
-			right={1}
-			paddingX={1}
-			borderStyle="round"
-			borderColor={color}
-		>
+		<Box marginTop={1} marginLeft={40} paddingX={1} borderStyle="round" borderColor={color}>
 			<Text color={color} bold>
 				{icon} {message}
 			</Text>

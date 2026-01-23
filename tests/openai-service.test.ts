@@ -15,7 +15,7 @@ function createFakeStream(chunks: Array<Partial<OpenAI.ChatCompletionChunk>>) {
 				yield chunk as OpenAI.ChatCompletionChunk;
 			}
 		},
-	} as AsyncIterable<OpenAI.ChatCompletionChunk>;
+	} as unknown as AsyncIterable<OpenAI.ChatCompletionChunk>;
 }
 
 test("createOpenAIClient requires an API key", () => {
@@ -30,13 +30,13 @@ test("streamChatCompletion yields content chunks", async () => {
 				create: async (args: unknown) => {
 					createCalls.push(args);
 					return createFakeStream([
-						{ choices: [{ delta: { content: "Hello" } }] },
-						{ choices: [{ delta: { content: " world" } }] },
+						{ choices: [{ index: 0, delta: { content: "Hello" }, finish_reason: null }] },
+						{ choices: [{ index: 0, delta: { content: " world" }, finish_reason: "stop" }] },
 					]);
 				},
 			},
 		},
-	} as OpenAI;
+	} as unknown as OpenAI;
 
 	const chunks: string[] = [];
 	for await (const chunk of streamChatCompletion(fakeClient, [{ role: "user", content: "Hi" }])) {
@@ -60,7 +60,7 @@ test("getChatCompletion returns content and forwards max tokens", async () => {
 				},
 			},
 		},
-	} as OpenAI;
+	} as unknown as OpenAI;
 
 	const result = await getChatCompletion(fakeClient, [{ role: "user", content: "Summarize" }], 120);
 
@@ -89,7 +89,7 @@ test("getChatCompletion retries on rate limit", async () => {
 				},
 			},
 		},
-	} as OpenAI;
+	} as unknown as OpenAI;
 
 	const result = await getChatCompletion(fakeClient, [{ role: "user", content: "retry please" }]);
 

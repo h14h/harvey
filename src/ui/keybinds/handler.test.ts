@@ -92,13 +92,13 @@ describe("KeyHandler", () => {
 		it("should switch to normal mode with Escape", () => {
 			handler.state.mode = "insert";
 			handler.handleInput({ input: "", key: "escape", ctrl: false, shift: false, alt: false });
-			expect(handler.state.mode).toBe("normal");
+			expect(handler.state.mode as string).toBe("normal");
 		});
 
 		it("should switch to normal mode with Ctrl+c in insert mode", () => {
 			handler.state.mode = "insert";
 			handler.handleInput({ input: "c", key: "", ctrl: true, shift: false, alt: false });
-			expect(handler.state.mode).toBe("normal");
+			expect(handler.state.mode as string).toBe("normal");
 		});
 	});
 
@@ -122,7 +122,7 @@ describe("KeyHandler", () => {
 		it("should move focus left with 'h'", () => {
 			handler.state.focus = "message-view";
 			handler.handleInput({ input: "h", key: "h", ctrl: false, shift: false, alt: false });
-			expect(handler.state.focus).toBe("chat-list");
+			expect(handler.state.focus as string).toBe("chat-list");
 		});
 
 		it("should move focus right with 'l'", () => {
@@ -195,8 +195,8 @@ describe("KeyHandler", () => {
 
 			handler.reset();
 
-			expect(handler.state.mode).toBe("normal");
-			expect(handler.state.focus).toBe("chat-list");
+			expect(handler.state.mode as string).toBe("normal");
+			expect(handler.state.focus as string).toBe("chat-list");
 			expect(handler.state.buffer).toEqual([]);
 			expect(handler.state.inSequence).toBe(false);
 		});

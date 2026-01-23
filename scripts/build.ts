@@ -104,7 +104,11 @@ async function createArchive(binaryPath: string, target: Target): Promise<string
  */
 async function generateChecksum(filepath: string): Promise<string> {
 	const result = await $`shasum -a 256 ${filepath}`.quiet();
-	return result.stdout.toString().trim().split(" ")[0];
+	const checksum = result.stdout.toString().trim().split(" ")[0];
+	if (!checksum) {
+		throw new Error(`Failed to generate checksum for ${filepath}`);
+	}
+	return checksum;
 }
 
 /**

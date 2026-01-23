@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import type { Message } from "../../types";
+import type { Message } from "../types";
 import { assembleContext, type ContextInput } from "./context";
 
 describe("Context Assembly", () => {
@@ -127,12 +127,12 @@ describe("Context Assembly", () => {
 		});
 
 		it("filters non-conversation messages", () => {
-			const messages = [
+			const messages: Message[] = [
 				createMessage("user", "User message"),
 				{
 					id: 1,
 					chatId: 1,
-					role: "system",
+					role: "system" as const,
 					content: "System instruction",
 					turnNumber: 0,
 					createdAt: 0,

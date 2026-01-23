@@ -152,9 +152,11 @@ export class KeyHandler {
 		const currentIndex = areas.indexOf(this.state.focus);
 
 		if (direction < 0 && currentIndex > 0) {
-			this.state.focus = areas[currentIndex - 1];
+			const newFocus = areas[currentIndex - 1];
+			if (newFocus) this.state.focus = newFocus;
 		} else if (direction > 0 && currentIndex < areas.length - 1) {
-			this.state.focus = areas[currentIndex + 1];
+			const newFocus = areas[currentIndex + 1];
+			if (newFocus) this.state.focus = newFocus;
 		}
 	}
 
@@ -165,7 +167,8 @@ export class KeyHandler {
 		const areas: FocusArea[] = ["chat-list", "message-view", "input"];
 		const currentIndex = areas.indexOf(this.state.focus);
 		const nextIndex = (currentIndex + direction + areas.length) % areas.length;
-		this.state.focus = areas[nextIndex];
+		const newFocus = areas[nextIndex] ?? "chat-list";
+		this.state.focus = newFocus;
 		this.onAction("focusNext");
 	}
 

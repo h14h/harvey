@@ -50,10 +50,9 @@ export async function searchChatsWithFzf(chats: Chat[]): Promise<FzfSearchResult
 			stderr: "pipe",
 		});
 
-		// Write input to fzf's stdin
-		const writer = proc.stdin.getWriter();
-		await writer.write(new TextEncoder().encode(input));
-		await writer.close();
+		// Write input to fzf's stdin using FileSink API
+		proc.stdin.write(new TextEncoder().encode(input));
+		proc.stdin.end();
 
 		// Wait for fzf to exit
 		const exitCode = await proc.exited;

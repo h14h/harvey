@@ -59,7 +59,7 @@ describe("searchChatsWithFzf", () => {
 		// Mock Bun.spawn to simulate fzf not found
 		Bun.spawn = mock(() => {
 			throw new Error("spawn fzf ENOENT");
-		});
+		}) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(mockChats);
 
@@ -74,7 +74,7 @@ describe("searchChatsWithFzf", () => {
 	test("handles fzf not found with generic error message", async () => {
 		Bun.spawn = mock(() => {
 			throw new Error("fzf: not found");
-		});
+		}) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(mockChats);
 
@@ -95,16 +95,14 @@ describe("searchChatsWithFzf", () => {
 
 		const mockProc = {
 			stdin: {
-				getWriter: () => ({
-					write: async () => {},
-					close: async () => {},
-				}),
+				write: () => 0,
+				end: () => 0,
 			},
 			stdout: mockStdout,
 			exited: Promise.resolve(1), // Non-zero exit = cancelled
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(mockChats);
 
@@ -125,16 +123,14 @@ describe("searchChatsWithFzf", () => {
 
 		const mockProc = {
 			stdin: {
-				getWriter: () => ({
-					write: async () => {},
-					close: async () => {},
-				}),
+				write: () => 0,
+				end: () => 0,
 			},
 			stdout: mockStdout,
 			exited: Promise.resolve(0), // Exit code 0 = success
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(mockChats);
 
@@ -156,16 +152,14 @@ describe("searchChatsWithFzf", () => {
 
 		const mockProc = {
 			stdin: {
-				getWriter: () => ({
-					write: async () => {},
-					close: async () => {},
-				}),
+				write: () => 0,
+				end: () => 0,
 			},
 			stdout: mockStdout,
 			exited: Promise.resolve(0),
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(mockChats);
 
@@ -185,16 +179,14 @@ describe("searchChatsWithFzf", () => {
 
 		const mockProc = {
 			stdin: {
-				getWriter: () => ({
-					write: async () => {},
-					close: async () => {},
-				}),
+				write: () => 0,
+				end: () => 0,
 			},
 			stdout: mockStdout,
 			exited: Promise.resolve(0),
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(mockChats);
 
@@ -214,16 +206,14 @@ describe("searchChatsWithFzf", () => {
 
 		const mockProc = {
 			stdin: {
-				getWriter: () => ({
-					write: async () => {},
-					close: async () => {},
-				}),
+				write: () => 0,
+				end: () => 0,
 			},
 			stdout: mockStdout,
 			exited: Promise.resolve(0),
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(mockChats);
 
@@ -243,16 +233,14 @@ describe("searchChatsWithFzf", () => {
 
 		const mockProc = {
 			stdin: {
-				getWriter: () => ({
-					write: async () => {},
-					close: async () => {},
-				}),
+				write: () => 0,
+				end: () => 0,
 			},
 			stdout: mockStdout,
 			exited: Promise.resolve(0),
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(mockChats);
 
@@ -272,16 +260,14 @@ describe("searchChatsWithFzf", () => {
 
 		const mockProc = {
 			stdin: {
-				getWriter: () => ({
-					write: async () => {},
-					close: async () => {},
-				}),
+				write: () => 0,
+				end: () => 0,
 			},
 			stdout: mockStdout,
 			exited: Promise.resolve(0),
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(mockChats);
 
@@ -304,18 +290,17 @@ describe("searchChatsWithFzf", () => {
 
 		const mockProc = {
 			stdin: {
-				getWriter: () => ({
-					write: mock(async (data: Uint8Array) => {
-						capturedInput = new TextDecoder().decode(data);
-					}),
-					close: async () => {},
+				write: mock((data: Uint8Array) => {
+					capturedInput = new TextDecoder().decode(data);
+					return data.length;
 				}),
+				end: () => 0,
 			},
 			stdout: mockStdout,
 			exited: Promise.resolve(0),
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		await searchChatsWithFzf(mockChats);
 
@@ -354,16 +339,14 @@ describe("searchChatsWithFzf", () => {
 
 		const mockProc = {
 			stdin: {
-				getWriter: () => ({
-					write: async () => {},
-					close: async () => {},
-				}),
+				write: () => 0,
+				end: () => 0,
 			},
 			stdout: mockStdout,
 			exited: Promise.resolve(0),
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await searchChatsWithFzf(chatsWithColon);
 
@@ -395,7 +378,7 @@ describe("isFzfAvailable", () => {
 			exited: Promise.resolve(0), // Exit code 0 = available
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await isFzfAvailable();
 
@@ -419,7 +402,7 @@ describe("isFzfAvailable", () => {
 			exited: Promise.resolve(1), // Non-zero exit = not available
 		};
 
-		Bun.spawn = mock(() => mockProc);
+		Bun.spawn = mock(() => mockProc) as unknown as typeof Bun.spawn;
 
 		const result = await isFzfAvailable();
 
@@ -431,7 +414,7 @@ describe("isFzfAvailable", () => {
 	test("returns false when fzf command throws", async () => {
 		Bun.spawn = mock(() => {
 			throw new Error("Command not found");
-		});
+		}) as unknown as typeof Bun.spawn;
 
 		const result = await isFzfAvailable();
 

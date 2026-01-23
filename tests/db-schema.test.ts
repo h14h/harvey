@@ -10,7 +10,7 @@ test("applySchema creates required tables and indexes", () => {
 	const tables = db
 		.query("SELECT name FROM sqlite_master WHERE type = 'table'")
 		.all()
-		.map((row) => row.name as string);
+		.map((row) => (row as { name: string }).name);
 
 	expect(tables).toEqual(
 		expect.arrayContaining(["chats", "messages", "summaries", "global_config"])
@@ -19,7 +19,7 @@ test("applySchema creates required tables and indexes", () => {
 	const indexes = db
 		.query("SELECT name FROM sqlite_master WHERE type = 'index' AND name NOT LIKE 'sqlite_%'")
 		.all()
-		.map((row) => row.name as string);
+		.map((row) => (row as { name: string }).name);
 
 	expect(indexes).toEqual(
 		expect.arrayContaining([
@@ -38,7 +38,7 @@ test("openDatabase applies schema to new connection", () => {
 	const tables = db
 		.query("SELECT name FROM sqlite_master WHERE type = 'table'")
 		.all()
-		.map((row) => row.name as string);
+		.map((row) => (row as { name: string }).name);
 
 	expect(tables).toEqual(
 		expect.arrayContaining(["chats", "messages", "summaries", "global_config"])

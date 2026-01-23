@@ -35,7 +35,7 @@ export async function loadConfig(): Promise<AppConfig> {
 	}
 
 	validateConfig(data);
-	return data;
+	return data as AppConfig;
 }
 
 export async function saveConfig(config: AppConfig): Promise<void> {

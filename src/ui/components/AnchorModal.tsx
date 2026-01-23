@@ -98,9 +98,8 @@ export function AnchorModal({ onSave }: AnchorModalProps) {
 
 	return (
 		<Box
-			position="absolute"
-			top={2}
-			left="center"
+			marginTop={2}
+			marginLeft={10}
 			width={60}
 			height={16}
 			borderStyle="round"

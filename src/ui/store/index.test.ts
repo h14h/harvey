@@ -223,7 +223,12 @@ describe("Store Reducer", () => {
 	});
 
 	it("should close modal and return to normal mode", () => {
-		const state = { ...initialState, activeModal: "new-chat", modalInput: "test", mode: "insert" };
+		const state = {
+			...initialState,
+			activeModal: "new-chat" as const,
+			modalInput: "test",
+			mode: "insert" as const,
+		};
 		const result = reducer(state, { type: "closeModal" });
 		expect(result.activeModal).toBeNull();
 		expect(result.modalInput).toBe("");

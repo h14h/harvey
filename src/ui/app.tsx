@@ -4,7 +4,7 @@
 
 import { Box, render, Text, useApp } from "ink";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Chat } from "../types";
+import type { Chat, Message } from "../types";
 import { getRecoverySuggestion, getUserFriendlyMessage, logError } from "../utils/errors";
 import { searchChatsWithFzf } from "../utils/fzf";
 import { AnchorModal } from "./components/AnchorModal";
@@ -128,8 +128,13 @@ function AppInner() {
 						"input",
 					];
 					const currentIndex = focusAreas.indexOf(state.focus);
-					const nextIndex = (currentIndex + 1) % focusAreas.length;
-					dispatch({ type: "setFocus", focus: focusAreas[nextIndex] });
+					if (currentIndex === -1) {
+						dispatch({ type: "setFocus", focus: "chat-list" });
+					} else {
+						const nextIndex = (currentIndex + 1) % focusAreas.length;
+						const nextFocus = focusAreas[nextIndex] ?? "chat-list";
+						dispatch({ type: "setFocus", focus: nextFocus });
+					}
 					break;
 				}
 				case "focusPrev": {
@@ -139,8 +144,13 @@ function AppInner() {
 						"input",
 					];
 					const currentIdx = focusAreasPrev.indexOf(state.focus);
-					const prevIdx = (currentIdx - 1 + focusAreasPrev.length) % focusAreasPrev.length;
-					dispatch({ type: "setFocus", focus: focusAreasPrev[prevIdx] });
+					if (currentIdx === -1) {
+						dispatch({ type: "setFocus", focus: "chat-list" });
+					} else {
+						const prevIdx = (currentIdx - 1 + focusAreasPrev.length) % focusAreasPrev.length;
+						const prevFocus = focusAreasPrev[prevIdx] ?? "chat-list";
+						dispatch({ type: "setFocus", focus: prevFocus });
+					}
 					break;
 				}
 				case "sendMessage":
@@ -359,9 +369,9 @@ function AppInner() {
  */
 export interface HarveyAppProps {
 	/** Initial chats to display */
-	initialChats?: unknown[];
+	initialChats?: Chat[];
 	/** Initial messages for the selected chat */
-	initialMessages?: unknown[];
+	initialMessages?: Message[];
 	/** Initial token count */
 	initialTokenCount?: number;
 }
@@ -379,8 +389,8 @@ export function HarveyApp({
 	return (
 		<StoreProvider
 			initialState={{
-				chats: initialChats as unknown[],
-				messages: initialMessages as unknown[],
+				chats: initialChats,
+				messages: initialMessages,
 				tokenCount: initialTokenCount,
 			}}
 		>

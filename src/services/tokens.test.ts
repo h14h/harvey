@@ -3,6 +3,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
+import type { ChatMessage } from "./openai";
 import { countTokens, estimateTokens } from "./tokens";
 
 describe("Token Counting", () => {
@@ -40,14 +41,14 @@ describe("Token Counting", () => {
 		});
 
 		it("estimates tokens for single message", () => {
-			const messages = [{ role: "user", content: "Hello" }];
+			const messages: ChatMessage[] = [{ role: "user", content: "Hello" }];
 			const count = estimateTokens(messages);
 			// Should include message overhead (3 tokens) plus role and content
 			expect(count).toBeGreaterThan(3);
 		});
 
 		it("estimates tokens for multiple messages", () => {
-			const messages = [
+			const messages: ChatMessage[] = [
 				{ role: "system", content: "You are helpful." },
 				{ role: "user", content: "Hello!" },
 				{ role: "assistant", content: "Hi there!" },
@@ -58,8 +59,8 @@ describe("Token Counting", () => {
 		});
 
 		it("includes message overhead for each message", () => {
-			const singleMessage = [{ role: "user", content: "test" }];
-			const multipleMessages = [
+			const singleMessage: ChatMessage[] = [{ role: "user", content: "test" }];
+			const multipleMessages: ChatMessage[] = [
 				{ role: "user", content: "test" },
 				{ role: "assistant", content: "response" },
 			];
@@ -72,17 +73,17 @@ describe("Token Counting", () => {
 		});
 
 		it("handles messages with name field", () => {
-			const messages = [{ role: "user", name: "Alice", content: "Hello" }];
+			const messages: ChatMessage[] = [{ role: "user", name: "Alice", content: "Hello" }];
 			const count = estimateTokens(messages);
 
-			const messagesWithout = [{ role: "user", content: "Hello" }];
+			const messagesWithout: ChatMessage[] = [{ role: "user", content: "Hello" }];
 			const countWithout = estimateTokens(messagesWithout);
 
 			expect(count).toBeGreaterThan(countWithout);
 		});
 
 		it("handles empty content", () => {
-			const messages = [{ role: "user", content: "" }];
+			const messages: ChatMessage[] = [{ role: "user", content: "" }];
 			const count = estimateTokens(messages);
 			// Should have at least the message overhead and role tokens
 			expect(count).toBeGreaterThan(0);

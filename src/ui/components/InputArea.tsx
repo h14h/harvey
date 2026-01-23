@@ -39,7 +39,7 @@ export function InputArea({ prompt = ">" }: InputAreaProps) {
 					Type a message...
 				</Text>
 			)}
-			{isFocused && <Text block>█</Text>}
+			{isFocused && <Text>█</Text>}
 		</Box>
 	);
 }

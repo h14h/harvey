@@ -29,7 +29,7 @@ export function StdinHandler(): null {
 			const str = data.toString();
 			const key: Record<string, boolean> = {
 				escape: str === "\x1b",
-				ctrl: str.length === 1 && data[0] < 32,
+				ctrl: str.length === 1 && data[0] !== undefined && data[0] < 32,
 				shift: false,
 				alt: false,
 			};
