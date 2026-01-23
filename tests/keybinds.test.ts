@@ -118,16 +118,21 @@ describe("KeyHandler", () => {
       expect(dispatchedActions).toContain("searchChats");
     });
 
-    test('deletes with "d"', () => {
+    test('deletes with "d" (after timeout or flush)', () => {
       press("d");
-      expect(dispatchedActions).toContain("deleteChat");
+      // "d" is buffered to wait for potential "dd" sequence
+      expect(handler.state.buffer).toEqual(["d"]);
+      // No immediate action dispatched
+      expect(dispatchedActions).not.toContain("deleteChat");
     });
 
-    test('double "d" triggers delete with confirmation', () => {
+    test('double "d" triggers delete immediately', () => {
       press("d");
       press("d");
+      // "dd" matches immediately, not twice
+      expect(dispatchedActions).toContain("deleteChat");
       const deleteActions = dispatchedActions.filter((a) => a === "deleteChat");
-      expect(deleteActions.length).toBe(2);
+      expect(deleteActions.length).toBe(1);
     });
   });
 

@@ -65,8 +65,27 @@ export class KeyHandler {
       this.sequenceTimer = null;
     }
 
-    // Try to match the full sequence (join buffer + new key without separator)
+    // Build the full sequence
     const fullSequence = this.state.buffer.join("") + sequenceKey;
+
+    // First, check if this could be the start of a multi-key sequence
+    // This must be checked BEFORE executing direct matches to support sequences like "dd"
+    const hasPotentialMatch = this.hasPotentialSequence(fullSequence);
+
+    if (hasPotentialMatch) {
+      // There's a potential longer sequence - buffer this key and wait
+      this.state.buffer.push(sequenceKey);
+      this.state.inSequence = true;
+
+      // Set timeout to clear buffer if no more input
+      this.sequenceTimer = setTimeout(() => {
+        // Timeout - execute buffered keys as individual actions
+        this.flushBuffer();
+      }, this.sequenceTimeout);
+      return;
+    }
+
+    // No potential sequence - check if we have a direct match
     const bindings = this.getBindingsForSequence(fullSequence);
 
     if (bindings.length > 0) {
@@ -85,25 +104,9 @@ export class KeyHandler {
       return;
     }
 
-    // Check if this could be the start of a sequence
-    const potentialSequence = this.state.buffer.join("") + sequenceKey;
-    const hasPotentialMatch = this.hasPotentialSequence(potentialSequence);
-
-    if (hasPotentialMatch) {
-      // Add to buffer and wait for more input
-      this.state.buffer.push(sequenceKey);
-      this.state.inSequence = true;
-
-      // Set timeout to clear buffer if no more input
-      this.sequenceTimer = setTimeout(() => {
-        // Timeout - treat buffer as individual key presses
-        this.flushBuffer();
-      }, this.sequenceTimeout);
-      return;
-    }
-
-    // No sequence match and no potential - handle as single key
-    this.flushBuffer();
+    // No match and no potential - flush buffer and discard unknown key
+    this.state.buffer = [];
+    this.state.inSequence = false;
   }
 
   /**
@@ -121,9 +124,19 @@ export class KeyHandler {
         break;
       case "focusNext":
         this.cycleFocus(1);
+        this.onAction(action);
         return;
       case "focusPrev":
         this.cycleFocus(-1);
+        this.onAction(action);
+        return;
+      case "focusLeft":
+        this.moveFocus(-1);
+        this.onAction(action);
+        return;
+      case "focusRight":
+        this.moveFocus(1);
+        this.onAction(action);
         return;
       default:
         // Other actions are passed to the handler
@@ -131,6 +144,20 @@ export class KeyHandler {
     }
 
     this.onAction(action);
+  }
+
+  /**
+   * Move focus left or right between chat-list and message-view.
+   */
+  private moveFocus(direction: number): void {
+    const areas: FocusArea[] = ["chat-list", "message-view", "input"];
+    const currentIndex = areas.indexOf(this.state.focus);
+
+    if (direction < 0 && currentIndex > 0) {
+      this.state.focus = areas[currentIndex - 1];
+    } else if (direction > 0 && currentIndex < areas.length - 1) {
+      this.state.focus = areas[currentIndex + 1];
+    }
   }
 
   /**
