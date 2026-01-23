@@ -26,7 +26,16 @@ done)
 
 selected=""
 
-if [[ ! -t 0 ]]; then
+# Count number of items
+item_count=$(printf '%s\n' "$display_items" | wc -l | tr -d ' ')
+
+if [[ "$item_count" -eq 1 ]]; then
+  # Auto-select the only item
+  selected="$display_items"
+  issue_num=$(echo "$selected" | cut -f2)
+  title=$(echo "$selected" | cut -f3)
+  echo "Auto-selecting the only item: #${issue_num} ${title}" >&2
+elif [[ ! -t 0 ]]; then
   selected=$(printf '%s\n' "$display_items" | head -n 1)
 elif command -v fzf >/dev/null 2>&1; then
   # Show only issue number and title in fzf, but keep item_id in the data
