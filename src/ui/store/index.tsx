@@ -207,13 +207,16 @@ export function useInputTextActions(): {
 } {
 	const dispatch = useAppDispatch();
 
-	return {
-		setText: (text: string) => dispatch({ type: "setInputText", text }),
-		append: (text: string) => dispatch({ type: "appendInput", text }),
-		deleteChar: () => dispatch({ type: "deleteInputChar" }),
-		deleteWord: () => dispatch({ type: "deleteInputWord" }),
-		clear: () => dispatch({ type: "clearInput" }),
-	};
+	const setText = useCallback(
+		(text: string) => dispatch({ type: "setInputText", text }),
+		[dispatch]
+	);
+	const append = useCallback((text: string) => dispatch({ type: "appendInput", text }), [dispatch]);
+	const deleteChar = useCallback(() => dispatch({ type: "deleteInputChar" }), [dispatch]);
+	const deleteWord = useCallback(() => dispatch({ type: "deleteInputWord" }), [dispatch]);
+	const clear = useCallback(() => dispatch({ type: "clearInput" }), [dispatch]);
+
+	return { setText, append, deleteChar, deleteWord, clear };
 }
 
 export function useModal(): {
@@ -228,14 +231,32 @@ export function useModal(): {
 	const { activeModal, modalInput } = useAppState();
 	const dispatch = useAppDispatch();
 
+	const openModal = useCallback(
+		(modal: ModalType) => dispatch({ type: "openModal", modal }),
+		[dispatch]
+	);
+	const closeModal = useCallback(() => dispatch({ type: "closeModal" }), [dispatch]);
+	const setModalInput = useCallback(
+		(text: string) => dispatch({ type: "setModalInput", text }),
+		[dispatch]
+	);
+	const appendModalInput = useCallback(
+		(text: string) => dispatch({ type: "appendModalInput", text }),
+		[dispatch]
+	);
+	const deleteModalInputChar = useCallback(
+		() => dispatch({ type: "deleteModalInputChar" }),
+		[dispatch]
+	);
+
 	return {
 		activeModal,
 		modalInput,
-		openModal: (modal: ModalType) => dispatch({ type: "openModal", modal }),
-		closeModal: () => dispatch({ type: "closeModal" }),
-		setModalInput: (text: string) => dispatch({ type: "setModalInput", text }),
-		appendModalInput: (text: string) => dispatch({ type: "appendModalInput", text }),
-		deleteModalInputChar: () => dispatch({ type: "deleteModalInputChar" }),
+		openModal,
+		closeModal,
+		setModalInput,
+		appendModalInput,
+		deleteModalInputChar,
 	};
 }
 
@@ -249,11 +270,22 @@ export function useStreaming(): {
 	const streaming = useAppState().streaming;
 	const dispatch = useAppDispatch();
 
+	const startStreaming = useCallback(() => dispatch({ type: "startStreaming" }), [dispatch]);
+	const appendStreaming = useCallback(
+		(content: string) => dispatch({ type: "appendStreaming", content }),
+		[dispatch]
+	);
+	const completeStreaming = useCallback(
+		(message: Message) => dispatch({ type: "completeStreaming", message }),
+		[dispatch]
+	);
+	const cancelStreaming = useCallback(() => dispatch({ type: "cancelStreaming" }), [dispatch]);
+
 	return {
 		streaming,
-		startStreaming: () => dispatch({ type: "startStreaming" }),
-		appendStreaming: (content: string) => dispatch({ type: "appendStreaming", content }),
-		completeStreaming: (message: Message) => dispatch({ type: "completeStreaming", message }),
-		cancelStreaming: () => dispatch({ type: "cancelStreaming" }),
+		startStreaming,
+		appendStreaming,
+		completeStreaming,
+		cancelStreaming,
 	};
 }
