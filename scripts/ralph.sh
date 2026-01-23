@@ -81,29 +81,14 @@ while :; do
   gh issue view --comments "$issue_number" --json title,body,comments --jq '.title, "", .body, (if (.comments | length) > 0 then "", "### Comments (IMPORTANT!!)", "", ((.comments[].body) | ., "") else empty end)' | cat | codex exec --dangerously-bypass-approvals-and-sandbox -
 done
 
-cat << 'EOF'
-                   .------------.
-                  /  I'm         \
-                 |  learnding!   |
-                  \__________  _/
-                             \/
-              \|/  \|/  \|/
-               \\   |   //
-            .--------------.
-           /                \
-          |   .---.  .---.   |
-          |   | o |  | o |   |
-          |   '---'  '---'   |
-          |        ()        |
-          |       /__\       |
-           \     |_**_|     /
-            '---._    _.---'
-            |    '----'    |
-            | .----------. |
-            | |          | |
-            | |          | |
-              |          |
-              |          |
-             _|          |_
-            |__|        |__|
+cat << "EOF"
+          \ | / | /
+        /           \
+       /  (.)   (.)  \      __________________
+      |       c       |    /                  \
+      |    \_____/    |   <  I'm learnding!    |
+       \             /     \__________________/
+        \___________/
+       / /   |   \ \
+      (_/    |    \_)
 EOF
