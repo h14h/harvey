@@ -72,5 +72,38 @@ gh project item-edit \
   --single-select-option-id "$in_progress_option_id"
 
 while :; do
+  # Check if issue is closed before running codex
+  issue_state=$(gh issue view "$issue_number" --json state --jq '.state')
+  if [[ "$issue_state" == "CLOSED" ]]; then
+    break
+  fi
+
   gh issue view --comments "$issue_number" --json title,body,comments --jq '.title, "", .body, (if (.comments | length) > 0 then "", "### Comments (IMPORTANT!!)", "", ((.comments[].body) | ., "") else empty end)' | cat | codex exec --dangerously-bypass-approvals-and-sandbox -
 done
+
+cat << 'EOF'
+                   .------------.
+                  /  I'm         \
+                 |  learnding!   |
+                  \__________  _/
+                             \/
+              \|/  \|/  \|/
+               \\   |   //
+            .--------------.
+           /                \
+          |   .---.  .---.   |
+          |   | o |  | o |   |
+          |   '---'  '---'   |
+          |        ()        |
+          |       /__\       |
+           \     |_**_|     /
+            '---._    _.---'
+            |    '----'    |
+            | .----------. |
+            | |          | |
+            | |          | |
+              |          |
+              |          |
+             _|          |_
+            |__|        |__|
+EOF
