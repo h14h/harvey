@@ -4,8 +4,8 @@
 
 import React, { useEffect, useCallback, useState, useRef } from "react";
 import { Box, Text, useApp, render } from "ink";
-import { KeyHandler } from "../keybinds/handler";
-import { DEFAULT_BINDINGS } from "../keybinds/types";
+import { KeyHandler } from "./keybinds/handler";
+import { DEFAULT_BINDINGS } from "./keybinds/types";
 import { StoreProvider, useAppStore, useInputTextActions } from "./store";
 import { StatusBar } from "./components/StatusBar";
 import { ChatList } from "./components/ChatList";
