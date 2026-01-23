@@ -4,9 +4,9 @@ import { join } from "node:path";
 
 const projectRoot = process.cwd();
 
-const requiredDirectories = ["src/db", "src/services", "src/ui", "src/config", "src/types"];
+const requiredDirectories = ["src/db", "src/services", "src/tui", "src/config", "src/types"];
 
-const requiredFiles = ["src/index.tsx"];
+const requiredFiles = ["src/index.ts"];
 
 test("project structure directories exist", () => {
 	for (const dir of requiredDirectories) {

@@ -3,13 +3,13 @@
 	"version": "0.1.0",
 	"description": "CLI application for long-running AI conversations with intelligent context management",
 	"type": "module",
-	"module": "src/index.tsx",
+	"module": "src/index.ts",
 	"bin": {
-		"harvey": "./src/index.tsx"
+		"harvey": "./src/index.ts"
 	},
 	"scripts": {
-		"start": "bun ./src/index.tsx",
-		"dev": "bun --hot ./src/index.tsx",
+		"start": "bun ./src/index.ts",
+		"dev": "bun --hot ./src/index.ts",
 		"test": "bun test",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
@@ -17,7 +17,7 @@
 		"check": "biome check . && bun run typecheck",
 		"typecheck": "tsc --noEmit",
 		"build": "bun ./scripts/build.ts",
-		"postinstall": "mkdir -p ~/.local/bin 2>/dev/null; ln -sf \"$PWD/src/index.tsx\" ~/.local/bin/harvey && chmod +x ~/.local/bin/harvey || true && simple-git-hooks"
+		"postinstall": "mkdir -p ~/.local/bin 2>/dev/null; ln -sf \"$PWD/src/index.ts\" ~/.local/bin/harvey && chmod +x ~/.local/bin/harvey || true && simple-git-hooks"
 	},
 	"simple-git-hooks": {
 		"pre-commit": "bun run check"
@@ -27,21 +27,14 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.11",
-		"@testing-library/react": "^16.3.2",
 		"@types/bun": "latest",
-		"@types/react": "^19.2.9",
-		"happy-dom": "^20.3.7",
-		"ink-testing-library": "^4.0.0",
 		"simple-git-hooks": "^2.13.1"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"ink": "^6.6.0",
 		"js-tiktoken": "^1.0.21",
-		"openai": "^6.16.0",
-		"react": "^19.2.3",
-		"react-reconciler": "^0.33.0"
+		"openai": "^6.16.0"
 	}
 }

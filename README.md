@@ -229,11 +229,11 @@ bun dev
 ```
 harvey/
 ├── src/
-│   ├── index.tsx           # Entry point
+│   ├── index.ts            # Entry point
 │   ├── types/              # TypeScript types
 │   ├── db/                 # Database schema and repositories
 │   ├── services/           # Business logic
-│   ├── ui/                 # TUI components
+│   ├── tui/                # TUI runtime
 │   │   ├── components/      # UI components
 │   │   ├── hooks/           # Custom hooks
 │   │   └── store/           # State management
@@ -261,6 +261,6 @@ MIT License - see LICENSE file for details.
 
 ## Acknowledgments
 
-- Built with [Ink](https://github.com/vadimdemedes/ink) - React for CLIs
+- Custom ANSI TUI renderer (no React/Ink dependency)
 - Uses [OpenAI API](https://openai.com/) - AI completions
 - Token counting via [js-tiktoken](https://github.com/dqbdjve/openai-tiktoken) - Byte pair encoding

@@ -49,7 +49,7 @@ async function buildBinary(target: Target): Promise<string> {
 
 	console.log(`Building ${basename}...`);
 
-	await $`bun build --compile --target=${target.bunTarget} --outfile=${outfile} ${PROJECT_ROOT}/../src/index.tsx`;
+	await $`bun build --compile --target=${target.bunTarget} --outfile=${outfile} ${PROJECT_ROOT}/../src/index.ts`;
 
 	return outfile;
 }
