@@ -23,10 +23,12 @@ Harvey is a terminal UI (TUI) application for having long-running conversations 
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) >= 1.0.0
-- OpenAI API key
+- **fzf** - Required for fuzzy chat search functionality
+  - macOS: `brew install fzf`
+  - Linux: `apt install fzf` or `yum install fzf`
+- OpenAI API key - Get yours at [platform.openai.com](https://platform.openai.com/api-keys)
 
-### Quick Install
+### Quick Install (from source)
 
 ```bash
 # Clone the repository
@@ -40,7 +42,21 @@ bun install
 bun start
 ```
 
-For detailed installation instructions, see the [Installation Guide](./docs/installation.md) (TODO).
+### Other Installation Methods
+
+For pre-built binaries and other installation options, see the [Installation Guide](./INSTALL.md).
+
+### Quick Start (with fzf search)
+
+After installing, run Harvey:
+
+```bash
+harvey  # or: bun start
+```
+
+1. Press `n` to create a new chat
+2. Enter an anchor prompt (e.g., "You are a helpful coding assistant")
+3. Press `i` to enter insert mode and start chatting!
 
 ## Configuration
 
@@ -116,6 +132,7 @@ summarization_frequency = 6
 | | `Tab` | Cycle focus forward |
 | | `Shift+Tab` | Cycle focus backward |
 | **Chats** | `n` | Create new chat |
+| | `/` | Search chats (with fzf) |
 | | `dd` | Delete current chat |
 | **Input** | `i` | Enter insert mode |
 | | `a` | Append mode |
