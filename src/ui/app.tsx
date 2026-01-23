@@ -13,6 +13,7 @@ import { MessageView } from "./components/MessageView";
 import { InputArea } from "./components/InputArea";
 import { NewChatModal } from "./components/NewChatModal";
 import { ToneModal } from "./components/ToneModal";
+import { AnchorModal } from "./components/AnchorModal";
 import { useSendMessage } from "./hooks";
 import type { Chat } from "../types";
 
@@ -52,6 +53,12 @@ function AppInner() {
         break;
       case "editGlobalTone":
         dispatch({ type: "openModal", modal: "edit-tone" });
+        break;
+      case "editChatAnchor":
+        // Only allow if a chat is selected
+        if (state.selectedChatId) {
+          dispatch({ type: "openModal", modal: "edit-anchor" });
+        }
         break;
       case "enterInsertMode":
       case "enterInsertModeAppend":
@@ -200,6 +207,35 @@ function AppInner() {
     }
   }, [dispatch]);
 
+  /**
+   * Handle saving a chat's anchor prompt.
+   * For now, updates the chat in memory.
+   * TODO: Persist to database and regenerate summary.
+   */
+  const handleSaveChatAnchor = useCallback(async (anchorPrompt: string) => {
+    setIsLoading(true);
+    try {
+      // Update the chat in the list
+      const updatedChats = state.chats.map((chat) =>
+        chat.id === state.selectedChatId
+          ? { ...chat, anchorPrompt, updatedAt: Date.now() }
+          : chat
+      );
+      dispatch({ type: "setChats", chats: updatedChats });
+
+      // TODO: Save to database
+      // TODO: Regenerate anchor_summary using OpenAI
+      // TODO: Optionally regenerate title
+
+      // Show confirmation
+      dispatch({ type: "setError", error: null }); // Clear any errors
+    } catch (error) {
+      dispatch({ type: "setError", error: error instanceof Error ? error.message : "Failed to save anchor" });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [state.chats, state.selectedChatId, dispatch]);
+
   return (
     <Box flexDirection="column" paddingX={1}>
       <StatusBar tokenCount={state.tokenCount} />
@@ -219,6 +255,7 @@ function AppInner() {
 
       <NewChatModal onSubmit={handleCreateChat} />
       <ToneModal currentTone={globalTone} onSave={handleSaveGlobalTone} />
+      <AnchorModal onSave={handleSaveChatAnchor} />
     </Box>
   );
 }
