@@ -34,6 +34,7 @@ test("applySchema creates required tables and indexes", () => {
       "idx_messages_chat_id",
       "idx_messages_turn_number",
       "idx_summaries_chat_id",
+      "idx_summaries_chat_type_turn",
     ])
   );
 

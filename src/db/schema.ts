@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS global_config (
 CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
 CREATE INDEX IF NOT EXISTS idx_messages_turn_number ON messages(chat_id, turn_number);
 CREATE INDEX IF NOT EXISTS idx_summaries_chat_id ON summaries(chat_id);
+CREATE INDEX IF NOT EXISTS idx_summaries_chat_type_turn
+    ON summaries(chat_id, type, generated_at_turn);
 `;
 
 export function applySchema(db: Database): void {
