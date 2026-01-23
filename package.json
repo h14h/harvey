@@ -13,8 +13,7 @@
     "test": "bun test",
     "lint": "bun test",
     "build": "bun ./scripts/build.ts",
-    "install-link": "bun build ./cli.js && echo '#!/usr/bin/env bun' > harvey && echo 'import(\"./src/index.tsx\")' >> harvey && chmod +x harvey && mv harvey ~/.local/bin/ 2>/dev/null || (echo 'Creating symlink to source...' && ln -sf \"$PWD/src/index.tsx\" ~/.local/bin/harvey && chmod +x ~/.local/bin/harvey)",
-    "install": "bun install --global 2>/dev/null || echo 'Install globally by running: bun link' || bun install && bun run install-link'",
+    "postinstall": "mkdir -p ~/.local/bin 2>/dev/null; ln -sf \"$PWD/src/index.tsx\" ~/.local/bin/harvey && chmod +x ~/.local/bin/harvey || true",
     "typecheck": "tsc --noEmit"
   },
   "engines": {
