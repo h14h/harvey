@@ -9,6 +9,11 @@ export type Mode = "normal" | "insert";
 export type FocusArea = "chat-list" | "message-view" | "input";
 
 /**
+ * Type of modal currently displayed.
+ */
+export type ModalType = "new-chat" | "edit-tone" | "edit-anchor" | null;
+
+/**
  * Application state shared across all components.
  */
 export interface AppState {
@@ -32,6 +37,10 @@ export interface AppState {
   tokenCount: number;
   /** Error message to display */
   error: string | null;
+  /** Currently active modal */
+  activeModal: ModalType;
+  /** Text input for the active modal */
+  modalInput: string;
 }
 
 /**
@@ -51,4 +60,9 @@ export type AppAction =
   | { type: "scrollChatList"; offset: number }
   | { type: "scrollMessageView"; offset: number }
   | { type: "setTokenCount"; count: number }
-  | { type: "setError"; error: string | null };
+  | { type: "setError"; error: string | null }
+  | { type: "openModal"; modal: ModalType }
+  | { type: "closeModal" }
+  | { type: "setModalInput"; text: string }
+  | { type: "appendModalInput"; text: string }
+  | { type: "deleteModalInputChar" };

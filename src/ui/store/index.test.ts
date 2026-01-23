@@ -16,6 +16,8 @@ const initialState: AppState = {
   messageViewOffset: 0,
   tokenCount: 0,
   error: null,
+  activeModal: null,
+  modalInput: "",
 };
 
 function reducer(state: AppState, action: AppAction): AppState {
@@ -65,6 +67,26 @@ function reducer(state: AppState, action: AppAction): AppState {
       return { ...state, tokenCount: action.count };
     case "setError":
       return { ...state, error: action.error };
+    case "openModal":
+      return {
+        ...state,
+        activeModal: action.modal,
+        modalInput: "",
+        mode: "insert",
+      };
+    case "closeModal":
+      return {
+        ...state,
+        activeModal: null,
+        modalInput: "",
+        mode: "normal",
+      };
+    case "setModalInput":
+      return { ...state, modalInput: action.text };
+    case "appendModalInput":
+      return { ...state, modalInput: state.modalInput + action.text };
+    case "deleteModalInputChar":
+      return { ...state, modalInput: state.modalInput.slice(0, -1) };
     default:
       return state;
   }
@@ -155,5 +177,44 @@ describe("Store Reducer", () => {
     const state = { ...initialState, error: "Test error" };
     const result = reducer(state, { type: "setError", error: null });
     expect(result.error).toBeNull();
+  });
+
+  // Modal state tests
+  it("should open new-chat modal", () => {
+    const result = reducer(initialState, { type: "openModal", modal: "new-chat" });
+    expect(result.activeModal).toBe("new-chat");
+    expect(result.modalInput).toBe("");
+    expect(result.mode).toBe("insert");
+  });
+
+  it("should open edit-tone modal", () => {
+    const result = reducer(initialState, { type: "openModal", modal: "edit-tone" });
+    expect(result.activeModal).toBe("edit-tone");
+    expect(result.mode).toBe("insert");
+  });
+
+  it("should close modal and return to normal mode", () => {
+    const state = { ...initialState, activeModal: "new-chat", modalInput: "test", mode: "insert" };
+    const result = reducer(state, { type: "closeModal" });
+    expect(result.activeModal).toBeNull();
+    expect(result.modalInput).toBe("");
+    expect(result.mode).toBe("normal");
+  });
+
+  it("should set modal input", () => {
+    const result = reducer(initialState, { type: "setModalInput", text: "test input" });
+    expect(result.modalInput).toBe("test input");
+  });
+
+  it("should append to modal input", () => {
+    const state = { ...initialState, modalInput: "hello" };
+    const result = reducer(state, { type: "appendModalInput", text: " world" });
+    expect(result.modalInput).toBe("hello world");
+  });
+
+  it("should delete modal input character", () => {
+    const state = { ...initialState, modalInput: "hello" };
+    const result = reducer(state, { type: "deleteModalInputChar" });
+    expect(result.modalInput).toBe("hell");
   });
 });

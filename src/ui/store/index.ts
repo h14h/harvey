@@ -3,7 +3,7 @@
  */
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import type { AppState, AppAction, Mode, FocusArea } from "./types";
+import type { AppState, AppAction, Mode, FocusArea, ModalType } from "./types";
 import type { Chat, Message } from "../../types";
 
 interface StoreContextValue {
@@ -24,6 +24,8 @@ const initialState: AppState = {
   messageViewOffset: 0,
   tokenCount: 0,
   error: null,
+  activeModal: null,
+  modalInput: "",
 };
 
 function reducer(state: AppState, action: AppAction): AppState {
@@ -73,6 +75,26 @@ function reducer(state: AppState, action: AppAction): AppState {
       return { ...state, tokenCount: action.count };
     case "setError":
       return { ...state, error: action.error };
+    case "openModal":
+      return {
+        ...state,
+        activeModal: action.modal,
+        modalInput: "",
+        mode: "insert", // Auto-switch to insert mode for modal input
+      };
+    case "closeModal":
+      return {
+        ...state,
+        activeModal: null,
+        modalInput: "",
+        mode: "normal", // Return to normal mode
+      };
+    case "setModalInput":
+      return { ...state, modalInput: action.text };
+    case "appendModalInput":
+      return { ...state, modalInput: state.modalInput + action.text };
+    case "deleteModalInputChar":
+      return { ...state, modalInput: state.modalInput.slice(0, -1) };
     default:
       return state;
   }
@@ -176,5 +198,28 @@ export function useInputTextActions(): {
     deleteChar: () => dispatch({ type: "deleteInputChar" }),
     deleteWord: () => dispatch({ type: "deleteInputWord" }),
     clear: () => dispatch({ type: "clearInput" }),
+  };
+}
+
+export function useModal(): {
+  activeModal: ModalType;
+  modalInput: string;
+  openModal: (modal: ModalType) => void;
+  closeModal: () => void;
+  setModalInput: (text: string) => void;
+  appendModalInput: (text: string) => void;
+  deleteModalInputChar: () => void;
+} {
+  const { activeModal, modalInput } = useAppState();
+  const dispatch = useAppDispatch();
+
+  return {
+    activeModal,
+    modalInput,
+    openModal: (modal: ModalType) => dispatch({ type: "openModal", modal }),
+    closeModal: () => dispatch({ type: "closeModal" }),
+    setModalInput: (text: string) => dispatch({ type: "setModalInput", text }),
+    appendModalInput: (text: string) => dispatch({ type: "appendModalInput", text }),
+    deleteModalInputChar: () => dispatch({ type: "deleteModalInputChar" }),
   };
 }

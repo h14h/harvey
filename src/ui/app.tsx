@@ -2,7 +2,7 @@
  * Harvey TUI - Main application component.
  */
 
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { Box, Text, useApp, render } from "ink";
 import { KeyHandler } from "../keybinds/handler";
 import { DEFAULT_BINDINGS } from "../keybinds/types";
@@ -11,6 +11,8 @@ import { StatusBar } from "./components/StatusBar";
 import { ChatList } from "./components/ChatList";
 import { MessageView } from "./components/MessageView";
 import { InputArea } from "./components/InputArea";
+import { NewChatModal } from "./components/NewChatModal";
+import type { Chat } from "../types";
 
 /**
  * Inner app component that uses the store.
@@ -19,14 +21,23 @@ function AppInner() {
   const { state, dispatch } = useAppStore();
   const { exit } = useApp();
   const inputActions = useInputTextActions();
+  const [isLoading, setIsLoading] = useState(false);
 
   /**
    * Handle key actions dispatched by the KeyHandler.
    */
   const handleAction = useCallback((action: string) => {
+    // Don't handle actions when modal is open (modal handles its own input)
+    if (state.activeModal) {
+      return;
+    }
+
     switch (action) {
       case "quit":
         exit();
+        break;
+      case "newChat":
+        dispatch({ type: "openModal", modal: "new-chat" });
         break;
       case "enterInsertMode":
       case "enterInsertModeAppend":
@@ -87,7 +98,7 @@ function AppInner() {
         inputActions.clear();
         break;
     }
-  }, [state.focus, state.inputText, dispatch, exit, inputActions]);
+  }, [state.focus, state.inputText, state.activeModal, dispatch, exit, inputActions]);
 
   /**
    * Set up the KeyHandler with our bindings.
@@ -108,6 +119,39 @@ function AppInner() {
     };
   }, [handleAction]);
 
+  /**
+   * Handle creating a new chat.
+   * For now, creates a chat with a placeholder title.
+   * TODO: Integrate with OpenAI for title generation and summarization.
+   */
+  const handleCreateChat = useCallback(async (anchorPrompt: string) => {
+    setIsLoading(true);
+    try {
+      // Create a simple chat with the anchor prompt
+      // TODO: Call OpenAI to generate title and summary
+      const newChat: Chat = {
+        id: Date.now(), // Temporary ID
+        title: anchorPrompt.slice(0, 30) + (anchorPrompt.length > 30 ? "..." : ""),
+        anchorPrompt,
+        anchorSummary: null,
+        turnCount: 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      // Add the new chat to the list
+      const updatedChats = [...state.chats, newChat];
+      dispatch({ type: "setChats", chats: updatedChats });
+
+      // Select the new chat
+      dispatch({ type: "selectChat", chatId: newChat.id });
+    } catch (error) {
+      dispatch({ type: "setError", error: error instanceof Error ? error.message : "Failed to create chat" });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [state.chats, dispatch]);
+
   return (
     <Box flexDirection="column" paddingX={1}>
       <StatusBar tokenCount={state.tokenCount} />
@@ -124,6 +168,8 @@ function AppInner() {
           <Text color="red">Error: {state.error}</Text>
         </Box>
       )}
+
+      <NewChatModal onSubmit={handleCreateChat} />
     </Box>
   );
 }
