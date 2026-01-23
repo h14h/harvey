@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { BS_CHAR, DEL_CHAR, isBackspace, isPrintableChar } from "./input";
+import { BS_CHAR, DEL_CHAR, isBackspace, isEscapeSequenceFragment, isPrintableChar } from "./input";
 
 describe("isBackspace", () => {
 	test("detects Ink's key.backspace flag", () => {
@@ -107,5 +107,85 @@ describe("character constants", () => {
 	test("BS_CHAR is correct", () => {
 		expect(BS_CHAR).toBe("\x08");
 		expect(BS_CHAR.charCodeAt(0)).toBe(8);
+	});
+});
+
+/**
+ * Tests for escape sequence fragment detection.
+ *
+ * Bug #41: Ctrl+Enter was inserting garbage characters like '[27;5;13~'
+ * because terminal escape sequences were split across buffer reads.
+ * The escape character (\x1b) comes in one read, and the rest of the
+ * sequence ('[27;5;13~') comes in the next, bypassing escape handling.
+ */
+describe("isEscapeSequenceFragment", () => {
+	test("detects Ctrl+Enter escape sequence fragments (bug #41)", () => {
+		// These are the fragments that remain after \x1b is consumed
+		expect(isEscapeSequenceFragment("[27;5;13~")).toBe(true);
+		expect(isEscapeSequenceFragment("[13;5u")).toBe(true);
+		expect(isEscapeSequenceFragment("[13;5~")).toBe(true);
+	});
+
+	test("detects arrow key escape sequence fragments", () => {
+		expect(isEscapeSequenceFragment("[A")).toBe(true);
+		expect(isEscapeSequenceFragment("[B")).toBe(true);
+		expect(isEscapeSequenceFragment("[C")).toBe(true);
+		expect(isEscapeSequenceFragment("[D")).toBe(true);
+	});
+
+	test("detects other CSI escape sequence fragments", () => {
+		// F1-F4 keys
+		expect(isEscapeSequenceFragment("[11~")).toBe(true);
+		expect(isEscapeSequenceFragment("[12~")).toBe(true);
+		// Page Up/Down
+		expect(isEscapeSequenceFragment("[5~")).toBe(true);
+		expect(isEscapeSequenceFragment("[6~")).toBe(true);
+		// Home/End
+		expect(isEscapeSequenceFragment("[H")).toBe(true);
+		expect(isEscapeSequenceFragment("[F")).toBe(true);
+		// Shift+Arrow
+		expect(isEscapeSequenceFragment("[1;2A")).toBe(true);
+		expect(isEscapeSequenceFragment("[1;2B")).toBe(true);
+	});
+
+	test("returns false for normal printable characters", () => {
+		expect(isEscapeSequenceFragment("a")).toBe(false);
+		expect(isEscapeSequenceFragment("abc")).toBe(false);
+		expect(isEscapeSequenceFragment("[")).toBe(false);
+		expect(isEscapeSequenceFragment("123")).toBe(false);
+	});
+
+	test("returns false for empty or short strings", () => {
+		expect(isEscapeSequenceFragment("")).toBe(false);
+		expect(isEscapeSequenceFragment("a")).toBe(false);
+	});
+
+	test("returns false for strings that don't match CSI pattern", () => {
+		// Missing terminator
+		expect(isEscapeSequenceFragment("[27;5;13")).toBe(false);
+		// Doesn't start with [
+		expect(isEscapeSequenceFragment("27;5;13~")).toBe(false);
+		// Invalid characters in parameters
+		expect(isEscapeSequenceFragment("[a;b;c~")).toBe(false);
+	});
+});
+
+describe("isPrintableChar - escape sequence filtering (bug #41)", () => {
+	test("filters out Ctrl+Enter garbage characters", () => {
+		// The exact garbage reported in bug #41
+		expect(isPrintableChar("[27;5;13~")).toBe(false);
+	});
+
+	test("filters out other escape sequence fragments", () => {
+		expect(isPrintableChar("[13;5u")).toBe(false);
+		expect(isPrintableChar("[A")).toBe(false);
+		expect(isPrintableChar("[1;2A")).toBe(false);
+	});
+
+	test("still allows normal text starting with [", () => {
+		// Single bracket is fine (not a valid CSI pattern)
+		expect(isPrintableChar("[")).toBe(true);
+		// Text with brackets
+		expect(isPrintableChar("a")).toBe(true);
 	});
 });

@@ -48,18 +48,57 @@ export function isBackspace(input: string, key: { backspace?: boolean; ctrl?: bo
 }
 
 /**
+ * Pattern for CSI (Control Sequence Introducer) escape sequence fragments.
+ *
+ * When escape sequences like '\x1b[27;5;13~' split across buffers,
+ * we may receive just the '[27;5;13~' part. This pattern detects such fragments.
+ *
+ * CSI sequences start with '[' followed by optional numeric parameters
+ * separated by ';' and end with a terminator character (letter or ~).
+ */
+const CSI_FRAGMENT_PATTERN = /^\[[\d;]*[A-Za-z~]$/;
+
+/**
+ * Check if input looks like a CSI escape sequence fragment.
+ *
+ * This handles the case where terminal escape sequences are split across
+ * multiple buffer reads, and we receive just the tail end (e.g., '[27;5;13~').
+ *
+ * @param input - The character input
+ * @returns true if this looks like an escape sequence fragment
+ */
+export function isEscapeSequenceFragment(input: string): boolean {
+	if (!input || input.length < 2) {
+		return false;
+	}
+
+	// CSI escape sequence fragment: starts with '[', contains params, ends with terminator
+	if (CSI_FRAGMENT_PATTERN.test(input)) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Check if an input character is printable and should be appended to text.
  *
  * Filters out:
  * - Control characters (ASCII 0-31)
  * - DEL character (ASCII 127)
  * - Empty strings
+ * - Escape sequence fragments (e.g., '[27;5;13~' from split buffers)
  *
  * @param input - The character input
  * @returns true if this is a printable character
  */
 export function isPrintableChar(input: string): boolean {
 	if (!input || input.length === 0) {
+		return false;
+	}
+
+	// Filter out escape sequence fragments (bug #41)
+	if (isEscapeSequenceFragment(input)) {
 		return false;
 	}
 

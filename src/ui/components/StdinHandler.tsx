@@ -40,8 +40,10 @@ export function StdinHandler(): null {
 			} else if (str === "\x7f") {
 				handleStdinKey("", { ...key, backspace: true });
 			} else if (str.startsWith("\x1b[")) {
-				// ANSI escape sequences for arrows
+				// ANSI escape sequences
 				const code = str.slice(2);
+
+				// Arrow keys
 				if (code === "A") {
 					handleStdinKey("", { ...key, upArrow: true });
 				} else if (code === "B") {
@@ -51,6 +53,13 @@ export function StdinHandler(): null {
 				} else if (code === "D") {
 					handleStdinKey("", { ...key, leftArrow: true });
 				}
+				// Ctrl+Enter escape sequences (bug #41)
+				// xterm extended keys: \x1b[13;5u (Enter=13, Ctrl modifier=5)
+				// CSI format: \x1b[27;5;13~ or similar
+				else if (code === "13;5u" || code.match(/^27;5;13~?$/) || code.match(/^13;5~$/)) {
+					handleStdinKey("", { ...key, return: true, ctrl: true });
+				}
+				// Silently ignore other escape sequences to prevent garbage input
 			} else {
 				handleStdinKey(str, key);
 			}
