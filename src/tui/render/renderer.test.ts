@@ -1,0 +1,95 @@
+import { describe, expect, test } from "bun:test";
+import { INITIAL_STATE } from "../state/reducer.js";
+import type { TuiState } from "../types.js";
+import { cursor } from "./ansi.js";
+import { render } from "./renderer.js";
+
+function buildState(overrides: Partial<TuiState>): TuiState {
+	return {
+		...INITIAL_STATE,
+		screenSize: { rows: 12, cols: 60 },
+		...overrides,
+	};
+}
+
+function stripAnsi(text: string): string {
+	// biome-ignore lint/complexity/useRegexLiterals: avoid control characters in regex literals.
+	const ansiPattern = new RegExp("\\u001b\\[[0-9;?]*[ -/]*[@-~]", "g");
+	return text.replace(ansiPattern, "");
+}
+
+describe("render", () => {
+	test("shows the correct mode indicator", () => {
+		const normal = render(buildState({ mode: "normal" }));
+		const insert = render(buildState({ mode: "insert" }));
+
+		expect(normal).toContain("[NORMAL]");
+		expect(insert).toContain("[INSERT]");
+	});
+
+	test("shows the focus area", () => {
+		const output = render(buildState({ focus: "messages" }));
+
+		expect(output).toContain("Focus: messages");
+	});
+
+	test("renders chat list selection", () => {
+		const output = render(
+			buildState({
+				chats: [
+					{ id: 1, title: "Chat Alpha" },
+					{ id: 2, title: "Chat Beta" },
+				],
+				selectedChatIndex: 1,
+			})
+		);
+
+		expect(output).toContain("> Chat Beta");
+	});
+
+	test("renders message role labels", () => {
+		const output = render(
+			buildState({
+				messages: [
+					{ id: 1, role: "user", content: "Hi" },
+					{ id: 2, role: "assistant", content: "Hello" },
+				],
+			})
+		);
+
+		expect(output).toContain("You:");
+		expect(output).toContain("AI:");
+	});
+
+	test("shows streaming content with cursor", () => {
+		const output = render(
+			buildState({
+				streaming: { active: true, content: "Thinking", chatId: 1 },
+			})
+		);
+
+		expect(output).toContain("Thinking");
+		expect(output).toContain("█");
+	});
+
+	test("overlays error messages", () => {
+		const output = render(buildState({ error: "Something went wrong" }));
+
+		expect(output).toContain("Something went wrong");
+	});
+
+	test("renders input prompt and text", () => {
+		const output = stripAnsi(render(buildState({ inputBuffer: "Hello", cursorPosition: 5 })));
+
+		expect(output).toContain("> Hello");
+	});
+
+	test("toggles cursor visibility by mode", () => {
+		const normal = render(buildState({ mode: "normal" }));
+		const insert = render(buildState({ mode: "insert" }));
+
+		expect(normal).toContain(cursor.hide);
+		expect(normal).not.toContain(cursor.show);
+		expect(insert).toContain(cursor.show);
+	});
+});
