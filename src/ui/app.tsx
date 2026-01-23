@@ -14,7 +14,7 @@ import { InputArea } from "./components/InputArea";
 import { NewChatModal } from "./components/NewChatModal";
 import { ToneModal } from "./components/ToneModal";
 import { AnchorModal } from "./components/AnchorModal";
-import { useSendMessage } from "./hooks";
+import { useSendMessage, useContextUsage } from "./hooks";
 import type { Chat } from "../types";
 
 /**
@@ -25,6 +25,7 @@ function AppInner() {
   const { exit } = useApp();
   const inputActions = useInputTextActions();
   const { sendMessage, isSending } = useSendMessage();
+  const contextUsage = useContextUsage();
   const [isLoading, setIsLoading] = useState(false);
   const [globalTone, setGlobalTone] = useState<string | null>(null);
   const sendMessageRef = useRef(sendMessage);
@@ -238,7 +239,7 @@ function AppInner() {
 
   return (
     <Box flexDirection="column" paddingX={1}>
-      <StatusBar tokenCount={state.tokenCount} />
+      <StatusBar tokenCount={state.tokenCount} contextUsage={contextUsage ?? undefined} />
 
       <Box marginTop={1}>
         <ChatList />
