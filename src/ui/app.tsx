@@ -12,6 +12,7 @@ import { ChatList } from "./components/ChatList";
 import { MessageView } from "./components/MessageView";
 import { InputArea } from "./components/InputArea";
 import { NewChatModal } from "./components/NewChatModal";
+import { ToneModal } from "./components/ToneModal";
 import { useSendMessage } from "./hooks";
 import type { Chat } from "../types";
 
@@ -24,6 +25,7 @@ function AppInner() {
   const inputActions = useInputTextActions();
   const { sendMessage, isSending } = useSendMessage();
   const [isLoading, setIsLoading] = useState(false);
+  const [globalTone, setGlobalTone] = useState<string | null>(null);
   const sendMessageRef = useRef(sendMessage);
   sendMessageRef.current = sendMessage;
 
@@ -47,6 +49,9 @@ function AppInner() {
         break;
       case "newChat":
         dispatch({ type: "openModal", modal: "new-chat" });
+        break;
+      case "editGlobalTone":
+        dispatch({ type: "openModal", modal: "edit-tone" });
         break;
       case "enterInsertMode":
       case "enterInsertModeAppend":
@@ -172,6 +177,29 @@ function AppInner() {
     }
   }, [state.chats, dispatch]);
 
+  /**
+   * Handle saving the global tone.
+   * For now, just stores the tone in memory.
+   * TODO: Persist to database and generate summary.
+   */
+  const handleSaveGlobalTone = useCallback(async (tone: string) => {
+    setIsLoading(true);
+    try {
+      // Store the global tone in memory
+      setGlobalTone(tone);
+
+      // TODO: Save to database
+      // TODO: Generate global_tone_summary using OpenAI
+
+      // Show confirmation
+      dispatch({ type: "setError", error: null }); // Clear any errors
+    } catch (error) {
+      dispatch({ type: "setError", error: error instanceof Error ? error.message : "Failed to save global tone" });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch]);
+
   return (
     <Box flexDirection="column" paddingX={1}>
       <StatusBar tokenCount={state.tokenCount} />
@@ -190,6 +218,7 @@ function AppInner() {
       )}
 
       <NewChatModal onSubmit={handleCreateChat} />
+      <ToneModal currentTone={globalTone} onSave={handleSaveGlobalTone} />
     </Box>
   );
 }
