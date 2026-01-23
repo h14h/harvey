@@ -78,19 +78,24 @@ export function getUserFriendlyMessage(error: unknown): string {
       return "Rate limited. Please wait a moment and try again.";
     }
 
+    // Database errors - check before network/connection errors
+    if (message.includes("database") || message.includes("sql")) {
+      return "Database error. Please check your data directory permissions.";
+    }
+
     // Network errors
-    if (message.includes("network") || message.includes("connection") || message.includes("econnrefused")) {
+    if (message.includes("network") || message.includes("econnrefused")) {
       return "Network error. Please check your connection and try again.";
+    }
+
+    // Connection errors - generic (but not database connection)
+    if (message.includes("connection") && !message.includes("database")) {
+      return "Connection error. Please check your connection and try again.";
     }
 
     // Model errors
     if (message.includes("model") || message.includes("not found")) {
       return "AI model error. The requested model may not be available.";
-    }
-
-    // Database errors
-    if (message.includes("database") || message.includes("sql")) {
-      return "Database error. Please check your data directory permissions.";
     }
 
     // Configuration errors
