@@ -14,7 +14,9 @@ import { InputArea } from "./components/InputArea";
 import { NewChatModal } from "./components/NewChatModal";
 import { ToneModal } from "./components/ToneModal";
 import { AnchorModal } from "./components/AnchorModal";
-import { useSendMessage, useContextUsage } from "./hooks";
+import { Toast } from "./components/Toast";
+import { useSendMessage, useContextUsage, useToasts } from "./hooks";
+import { logError, getUserFriendlyMessage, getRecoverySuggestion } from "../utils/errors";
 import type { Chat } from "../types";
 
 /**
@@ -26,6 +28,7 @@ function AppInner() {
   const inputActions = useInputTextActions();
   const { sendMessage, isSending } = useSendMessage();
   const contextUsage = useContextUsage();
+  const { toasts, dismiss } = useToasts();
   const [isLoading, setIsLoading] = useState(false);
   const [globalTone, setGlobalTone] = useState<string | null>(null);
   const sendMessageRef = useRef(sendMessage);
@@ -179,7 +182,9 @@ function AppInner() {
       // Select the new chat
       dispatch({ type: "selectChat", chatId: newChat.id });
     } catch (error) {
-      dispatch({ type: "setError", error: error instanceof Error ? error.message : "Failed to create chat" });
+      logError(error, "handleCreateChat");
+      const userMessage = getUserFriendlyMessage(error);
+      dispatch({ type: "setError", error: userMessage });
     } finally {
       setIsLoading(false);
     }
@@ -199,10 +204,12 @@ function AppInner() {
       // TODO: Save to database
       // TODO: Generate global_tone_summary using OpenAI
 
-      // Show confirmation
-      dispatch({ type: "setError", error: null }); // Clear any errors
+      // Show confirmation - clear errors
+      dispatch({ type: "setError", error: null });
     } catch (error) {
-      dispatch({ type: "setError", error: error instanceof Error ? error.message : "Failed to save global tone" });
+      logError(error, "handleSaveGlobalTone");
+      const userMessage = getUserFriendlyMessage(error);
+      dispatch({ type: "setError", error: userMessage });
     } finally {
       setIsLoading(false);
     }
@@ -228,10 +235,12 @@ function AppInner() {
       // TODO: Regenerate anchor_summary using OpenAI
       // TODO: Optionally regenerate title
 
-      // Show confirmation
-      dispatch({ type: "setError", error: null }); // Clear any errors
+      // Show confirmation - clear errors
+      dispatch({ type: "setError", error: null });
     } catch (error) {
-      dispatch({ type: "setError", error: error instanceof Error ? error.message : "Failed to save anchor" });
+      logError(error, "handleSaveChatAnchor");
+      const userMessage = getUserFriendlyMessage(error);
+      dispatch({ type: "setError", error: userMessage });
     } finally {
       setIsLoading(false);
     }
@@ -248,11 +257,34 @@ function AppInner() {
 
       <InputArea />
 
+      {/* Enhanced error display with recovery suggestions */}
       {state.error && (
-        <Box marginTop={1}>
-          <Text color="red">Error: {state.error}</Text>
+        <Box marginTop={1} borderStyle="single" borderColor="red" paddingX={1}>
+          <Box flexDirection="column">
+            <Text color="red" bold>
+              Error: {state.error}
+            </Text>
+            {(() => {
+              const recovery = getRecoverySuggestion(new Error(state.error));
+              return recovery && (
+                <Text color="gray" dimColor>
+                  Hint: {recovery}
+                </Text>
+              );
+            })()}
+          </Box>
         </Box>
       )}
+
+      {/* Toast notifications */}
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => dismiss(toast.id)}
+        />
+      ))}
 
       <NewChatModal onSubmit={handleCreateChat} />
       <ToneModal currentTone={globalTone} onSave={handleSaveGlobalTone} />

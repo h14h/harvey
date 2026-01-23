@@ -6,6 +6,7 @@ import { useCallback, useRef } from "react";
 import { useAppStore, useInputTextActions, useStreaming } from "../store";
 import { streamChatCompletion, createOpenAIClientFromConfig } from "../../services/openai";
 import { assembleContext, type ContextInput } from "../../services/context";
+import { logError, getUserFriendlyMessage } from "../../utils/errors";
 import type { Message } from "../../types";
 
 interface SendMessageOptions {
@@ -104,8 +105,9 @@ export function useSendMessage(): UseSendMessageReturn {
 
     } catch (error) {
       cancelStreaming();
-      const errorMessage = error instanceof Error ? error.message : "Failed to send message";
-      dispatch({ type: "setError", error: errorMessage });
+      logError(error, "useSendMessage");
+      const userMessage = getUserFriendlyMessage(error);
+      dispatch({ type: "setError", error: userMessage });
     } finally {
       isSendingRef.current = false;
     }
