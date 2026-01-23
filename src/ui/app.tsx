@@ -2,7 +2,7 @@
  * Harvey TUI - Main application component.
  */
 
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useCallback, useState, useRef } from "react";
 import { Box, Text, useApp, render } from "ink";
 import { KeyHandler } from "../keybinds/handler";
 import { DEFAULT_BINDINGS } from "../keybinds/types";
@@ -12,6 +12,7 @@ import { ChatList } from "./components/ChatList";
 import { MessageView } from "./components/MessageView";
 import { InputArea } from "./components/InputArea";
 import { NewChatModal } from "./components/NewChatModal";
+import { useSendMessage } from "./hooks";
 import type { Chat } from "../types";
 
 /**
@@ -21,7 +22,10 @@ function AppInner() {
   const { state, dispatch } = useAppStore();
   const { exit } = useApp();
   const inputActions = useInputTextActions();
+  const { sendMessage, isSending } = useSendMessage();
   const [isLoading, setIsLoading] = useState(false);
+  const sendMessageRef = useRef(sendMessage);
+  sendMessageRef.current = sendMessage;
 
   /**
    * Handle key actions dispatched by the KeyHandler.
@@ -29,6 +33,11 @@ function AppInner() {
   const handleAction = useCallback((action: string) => {
     // Don't handle actions when modal is open (modal handles its own input)
     if (state.activeModal) {
+      return;
+    }
+
+    // Don't allow sending while already streaming
+    if (state.streaming.isStreaming && (action === "sendMessage" || action === "enterInsertMode")) {
       return;
     }
 
@@ -80,9 +89,20 @@ function AppInner() {
         dispatch({ type: "setFocus", focus: focusAreasPrev[prevIdx] });
         break;
       case "sendMessage":
-        // For now just clear input - actual sending will be implemented later
-        if (state.inputText.trim()) {
-          inputActions.clear();
+        // Send the message when user presses Enter in insert mode
+        if (state.inputText.trim() && state.selectedChatId) {
+          const selectedChat = state.chats.find((c) => c.id === state.selectedChatId);
+          sendMessageRef.current({
+            content: state.inputText.trim(),
+            chatId: state.selectedChatId,
+            contextInput: {
+              globalToneSummary: null, // TODO: Get from config
+              anchorSummary: selectedChat?.anchorSummary ?? null,
+              historySummary: null, // TODO: Get from summaries
+              recentMessages: state.messages,
+              currentMessage: state.inputText.trim(),
+            },
+          });
         }
         break;
       case "newline":
@@ -98,7 +118,7 @@ function AppInner() {
         inputActions.clear();
         break;
     }
-  }, [state.focus, state.inputText, state.activeModal, dispatch, exit, inputActions]);
+  }, [state.focus, state.inputText, state.activeModal, state.streaming.isStreaming, state.selectedChatId, state.chats, state.messages, dispatch, exit, inputActions]);
 
   /**
    * Set up the KeyHandler with our bindings.

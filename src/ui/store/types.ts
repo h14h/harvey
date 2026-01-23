@@ -14,6 +14,16 @@ export type FocusArea = "chat-list" | "message-view" | "input";
 export type ModalType = "new-chat" | "edit-tone" | "edit-anchor" | null;
 
 /**
+ * Streaming state for assistant responses.
+ */
+export interface StreamingState {
+  /** Whether currently streaming a response */
+  isStreaming: boolean;
+  /** The streamed content so far */
+  content: string;
+}
+
+/**
  * Application state shared across all components.
  */
 export interface AppState {
@@ -41,6 +51,8 @@ export interface AppState {
   activeModal: ModalType;
   /** Text input for the active modal */
   modalInput: string;
+  /** Streaming assistant response state */
+  streaming: StreamingState;
 }
 
 /**
@@ -65,4 +77,8 @@ export type AppAction =
   | { type: "closeModal" }
   | { type: "setModalInput"; text: string }
   | { type: "appendModalInput"; text: string }
-  | { type: "deleteModalInputChar" };
+  | { type: "deleteModalInputChar" }
+  | { type: "startStreaming" }
+  | { type: "appendStreaming"; content: string }
+  | { type: "completeStreaming"; message: Message }
+  | { type: "cancelStreaming" };

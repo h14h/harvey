@@ -18,6 +18,7 @@ const initialState: AppState = {
   error: null,
   activeModal: null,
   modalInput: "",
+  streaming: { isStreaming: false, content: "" },
 };
 
 function reducer(state: AppState, action: AppAction): AppState {
@@ -87,6 +88,24 @@ function reducer(state: AppState, action: AppAction): AppState {
       return { ...state, modalInput: state.modalInput + action.text };
     case "deleteModalInputChar":
       return { ...state, modalInput: state.modalInput.slice(0, -1) };
+    case "startStreaming":
+      return { ...state, streaming: { isStreaming: true, content: "" } };
+    case "appendStreaming":
+      return {
+        ...state,
+        streaming: {
+          isStreaming: true,
+          content: state.streaming.content + action.content,
+        },
+      };
+    case "completeStreaming":
+      return {
+        ...state,
+        messages: [...state.messages, action.message],
+        streaming: { isStreaming: false, content: "" },
+      };
+    case "cancelStreaming":
+      return { ...state, streaming: { isStreaming: false, content: "" } };
     default:
       return state;
   }
@@ -216,5 +235,35 @@ describe("Store Reducer", () => {
     const state = { ...initialState, modalInput: "hello" };
     const result = reducer(state, { type: "deleteModalInputChar" });
     expect(result.modalInput).toBe("hell");
+  });
+
+  // Streaming state tests
+  it("should start streaming", () => {
+    const result = reducer(initialState, { type: "startStreaming" });
+    expect(result.streaming.isStreaming).toBe(true);
+    expect(result.streaming.content).toBe("");
+  });
+
+  it("should append streaming content", () => {
+    const state = { ...initialState, streaming: { isStreaming: true, content: "Hello" } };
+    const result = reducer(state, { type: "appendStreaming", content: " World" });
+    expect(result.streaming.isStreaming).toBe(true);
+    expect(result.streaming.content).toBe("Hello World");
+  });
+
+  it("should complete streaming and add message", () => {
+    const state = { ...initialState, streaming: { isStreaming: true, content: "Response" } };
+    const message = { id: 1, chatId: 1, role: "assistant" as const, content: "Response", turnNumber: 1, createdAt: 0 };
+    const result = reducer(state, { type: "completeStreaming", message });
+    expect(result.streaming.isStreaming).toBe(false);
+    expect(result.streaming.content).toBe("");
+    expect(result.messages).toContainEqual(message);
+  });
+
+  it("should cancel streaming", () => {
+    const state = { ...initialState, streaming: { isStreaming: true, content: "Partial" } };
+    const result = reducer(state, { type: "cancelStreaming" });
+    expect(result.streaming.isStreaming).toBe(false);
+    expect(result.streaming.content).toBe("");
   });
 });

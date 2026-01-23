@@ -3,7 +3,7 @@
  */
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import type { AppState, AppAction, Mode, FocusArea, ModalType } from "./types";
+import type { AppState, AppAction, Mode, FocusArea, ModalType, StreamingState } from "./types";
 import type { Chat, Message } from "../../types";
 
 interface StoreContextValue {
@@ -26,6 +26,7 @@ const initialState: AppState = {
   error: null,
   activeModal: null,
   modalInput: "",
+  streaming: { isStreaming: false, content: "" },
 };
 
 function reducer(state: AppState, action: AppAction): AppState {
@@ -95,6 +96,24 @@ function reducer(state: AppState, action: AppAction): AppState {
       return { ...state, modalInput: state.modalInput + action.text };
     case "deleteModalInputChar":
       return { ...state, modalInput: state.modalInput.slice(0, -1) };
+    case "startStreaming":
+      return { ...state, streaming: { isStreaming: true, content: "" } };
+    case "appendStreaming":
+      return {
+        ...state,
+        streaming: {
+          isStreaming: true,
+          content: state.streaming.content + action.content,
+        },
+      };
+    case "completeStreaming":
+      return {
+        ...state,
+        messages: [...state.messages, action.message],
+        streaming: { isStreaming: false, content: "" },
+      };
+    case "cancelStreaming":
+      return { ...state, streaming: { isStreaming: false, content: "" } };
     default:
       return state;
   }
@@ -221,5 +240,24 @@ export function useModal(): {
     setModalInput: (text: string) => dispatch({ type: "setModalInput", text }),
     appendModalInput: (text: string) => dispatch({ type: "appendModalInput", text }),
     deleteModalInputChar: () => dispatch({ type: "deleteModalInputChar" }),
+  };
+}
+
+export function useStreaming(): {
+  streaming: StreamingState;
+  startStreaming: () => void;
+  appendStreaming: (content: string) => void;
+  completeStreaming: (message: Message) => void;
+  cancelStreaming: () => void;
+} {
+  const streaming = useAppState().streaming;
+  const dispatch = useAppDispatch();
+
+  return {
+    streaming,
+    startStreaming: () => dispatch({ type: "startStreaming" }),
+    appendStreaming: (content: string) => dispatch({ type: "appendStreaming", content }),
+    completeStreaming: (message: Message) => dispatch({ type: "completeStreaming", message }),
+    cancelStreaming: () => dispatch({ type: "cancelStreaming" }),
   };
 }
