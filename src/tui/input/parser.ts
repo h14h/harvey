@@ -1,6 +1,5 @@
 import type { InputEvent, KeyInfo, KeyName } from "../types.js";
 
-const ESC = 0x1b;
 const CSI = "\x1b[";
 const SS3 = "\x1bO";
 
@@ -30,6 +29,10 @@ function buildEvent(raw: string, key: KeyInfo): InputEvent {
 		key,
 		raw,
 	};
+}
+
+function emptyEvent(raw: string): InputEvent {
+	return buildEvent(raw, { name: "char", char: "", ctrl: false, alt: false, shift: false });
 }
 
 function modifiersFromParams(params: number[]): { shift: boolean; alt: boolean; ctrl: boolean } {
@@ -148,41 +151,107 @@ function parseSs3(raw: string): InputEvent | null {
 	return null;
 }
 
-export function parseInput(buffer: Buffer): InputEvent {
-	const raw = buffer.toString("utf8");
-	if (!raw) {
-		return buildEvent(raw, { name: "char", char: "", ctrl: false, alt: false, shift: false });
+function readCodePoint(raw: string, index: number): { text: string; length: number } {
+	const codePoint = raw.codePointAt(index);
+	if (codePoint === undefined) {
+		return { text: "", length: 1 };
+	}
+	const length = codePoint > 0xffff ? 2 : 1;
+	return { text: raw.slice(index, index + length), length };
+}
+
+function parseCsiPrefix(raw: string): { event: InputEvent; length: number } | null {
+	if (!raw.startsWith(CSI)) {
+		return null;
+	}
+	// biome-ignore lint/suspicious/noControlCharactersInRegex: CSI sequences include the ESC byte prefix.
+	const csiPattern = /^\x1b\[[0-9;]*[A-Za-z~]/;
+	const match = raw.match(csiPattern);
+	if (!match) {
+		return null;
+	}
+	const sequence = match[0];
+	const event = parseCsi(sequence);
+	if (!event) {
+		return null;
+	}
+	return { event, length: sequence.length };
+}
+
+function parseSs3Prefix(raw: string): { event: InputEvent; length: number } | null {
+	if (!raw.startsWith(SS3) || raw.length < SS3.length + 1) {
+		return null;
+	}
+	const sequence = raw.slice(0, SS3.length + 1);
+	const event = parseSs3(sequence);
+	if (!event) {
+		return null;
+	}
+	return { event, length: sequence.length };
+}
+
+function parseEscapeSequence(raw: string): { event: InputEvent; length: number } {
+	const csiEvent = parseCsiPrefix(raw);
+	if (csiEvent) {
+		return csiEvent;
+	}
+	const ss3Event = parseSs3Prefix(raw);
+	if (ss3Event) {
+		return ss3Event;
 	}
 
-	if (buffer[0] === ESC) {
-		if (raw.startsWith(CSI)) {
-			const csiEvent = parseCsi(raw);
-			if (csiEvent) {
-				return csiEvent;
-			}
-		}
-
-		if (raw.startsWith(SS3)) {
-			const ss3Event = parseSs3(raw);
-			if (ss3Event) {
-				return ss3Event;
-			}
-		}
-
-		if (raw.length > 1) {
-			const altRaw = raw.slice(1);
-			const altEvent = parseNonEscape(Buffer.from(altRaw, "utf8"), altRaw);
-			return {
+	if (raw.length > 1 && raw[1] !== "\x1b") {
+		const { text, length } = readCodePoint(raw, 1);
+		const altEvent = parseNonEscape(Buffer.from(text, "utf8"), text);
+		return {
+			event: {
 				...altEvent,
+				raw: `${raw[0]}${text}`,
 				key: {
 					...altEvent.key,
 					alt: true,
 				},
-			};
-		}
-
-		return buildEvent(raw, { name: "escape", ctrl: false, alt: false, shift: false });
+			},
+			length: 1 + length,
+		};
 	}
 
-	return parseNonEscape(buffer, raw);
+	return {
+		event: buildEvent(raw[0] ?? "\x1b", {
+			name: "escape",
+			ctrl: false,
+			alt: false,
+			shift: false,
+		}),
+		length: 1,
+	};
+}
+
+export function parseInputEvents(buffer: Buffer): InputEvent[] {
+	const raw = buffer.toString("utf8");
+	if (!raw) {
+		return [emptyEvent(raw)];
+	}
+
+	const events: InputEvent[] = [];
+	let index = 0;
+	while (index < raw.length) {
+		const char = raw[index];
+		if (char === "\x1b") {
+			const { event, length } = parseEscapeSequence(raw.slice(index));
+			events.push(event);
+			index += length;
+			continue;
+		}
+
+		const { text, length } = readCodePoint(raw, index);
+		events.push(parseNonEscape(Buffer.from(text, "utf8"), text));
+		index += length;
+	}
+
+	return events;
+}
+
+export function parseInput(buffer: Buffer): InputEvent {
+	return parseInputEvents(buffer)[0] ?? emptyEvent("");
 }

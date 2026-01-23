@@ -105,6 +105,29 @@ describe("runTui", () => {
 		await run;
 	});
 
+	test("handles multiple keys in one buffer", async () => {
+		const { stdin, stdout, outputs } = createHarness();
+		const onCommand: CommandHandler = async () => [] as Action[];
+		const run = runTui({
+			stdin: stdin as unknown as NodeJS.ReadStream,
+			stdout: stdout as unknown as NodeJS.WriteStream,
+			onCommand,
+			initialState: { mode: "normal" } as Partial<TuiState>,
+		});
+
+		await pause();
+		stdin.write(Buffer.from("iA"));
+		await pause();
+
+		const latest = outputs.at(-1) ?? "";
+		expect(stripAnsi(latest)).toContain("> A");
+
+		stdin.write(Buffer.from("\u001b"));
+		await pause();
+		stdin.write(Buffer.from("q"));
+		await run;
+	});
+
 	test("applies command actions", async () => {
 		const { stdin, stdout, outputs } = createHarness();
 		const onCommand: CommandHandler = async (command: Command) => {

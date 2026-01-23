@@ -1,5 +1,5 @@
 import { resolveKeybind } from "./input/keybinds.js";
-import { parseInput } from "./input/parser.js";
+import { parseInputEvents } from "./input/parser.js";
 import { cursor, screen } from "./render/ansi.js";
 import { render } from "./render/renderer.js";
 import { INITIAL_STATE, reducer } from "./state/reducer.js";
@@ -131,23 +131,28 @@ export function runTui(deps: TuiDependencies): Promise<void> {
 				return;
 			}
 
-			const previousChat = selectedChatId(state);
-			const event = parseInput(buffer);
-			const { actions, commands } = resolveKeybind(event, state.mode);
-
-			applyActions(actions);
-
-			for (const command of commands) {
-				if (command.type === "QUIT") {
-					requestQuit();
+			const events = parseInputEvents(buffer);
+			for (const event of events) {
+				if (!isRunning) {
 					return;
 				}
-				enqueueCommand(command);
-			}
+				const previousChat = selectedChatId(state);
+				const { actions, commands } = resolveKeybind(event, state.mode);
 
-			const nextChat = selectedChatId(state);
-			if (nextChat !== null && nextChat !== previousChat) {
-				enqueueCommand({ type: "LOAD_CHAT", chatId: nextChat });
+				applyActions(actions);
+
+				for (const command of commands) {
+					if (command.type === "QUIT") {
+						requestQuit();
+						return;
+					}
+					enqueueCommand(command);
+				}
+
+				const nextChat = selectedChatId(state);
+				if (nextChat !== null && nextChat !== previousChat) {
+					enqueueCommand({ type: "LOAD_CHAT", chatId: nextChat });
+				}
 			}
 		};
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { InputEvent } from "../types.js";
-import { parseInput } from "./parser.js";
+import { parseInput, parseInputEvents } from "./parser.js";
 
 function expectKey(
 	event: ReturnType<typeof parseInput>,
@@ -19,6 +19,14 @@ function expectKey(
 	expect(event.key.ctrl).toBe(key.ctrl ?? false);
 	expect(event.key.alt).toBe(key.alt ?? false);
 	expect(event.key.shift).toBe(key.shift ?? false);
+}
+
+function getEvent(events: InputEvent[], index: number): InputEvent {
+	const event = events[index];
+	if (!event) {
+		throw new Error(`Expected input event at index ${index}`);
+	}
+	return event;
 }
 
 describe("parseInput", () => {
@@ -76,5 +84,28 @@ describe("parseInput", () => {
 			name: "up",
 			shift: true,
 		});
+	});
+});
+
+describe("parseInputEvents", () => {
+	test("splits buffered printable characters", () => {
+		const events = parseInputEvents(Buffer.from("jk"));
+		expect(events).toHaveLength(2);
+		expectKey(getEvent(events, 0), { name: "char", char: "j" });
+		expectKey(getEvent(events, 1), { name: "char", char: "k" });
+	});
+
+	test("splits buffered escape sequences", () => {
+		const events = parseInputEvents(Buffer.from([0x1b, 0x5b, 0x41, 0x1b, 0x5b, 0x42]));
+		expect(events).toHaveLength(2);
+		expectKey(getEvent(events, 0), { name: "up" });
+		expectKey(getEvent(events, 1), { name: "down" });
+	});
+
+	test("splits buffered utf-8 characters", () => {
+		const events = parseInputEvents(Buffer.from("\u00e9a", "utf8"));
+		expect(events).toHaveLength(2);
+		expectKey(getEvent(events, 0), { name: "char", char: "\u00e9" });
+		expectKey(getEvent(events, 1), { name: "char", char: "a" });
 	});
 });
