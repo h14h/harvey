@@ -12,7 +12,7 @@ const requiredDirectories = [
   "src/types",
 ];
 
-const requiredFiles = ["src/index.ts"];
+const requiredFiles = ["src/index.tsx"];
 
 test("project structure directories exist", () => {
   for (const dir of requiredDirectories) {
