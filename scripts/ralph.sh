@@ -94,7 +94,7 @@ while :; do
     break
   fi
 
-  echo $prompt | claude --dangerously-skip-permissions
+  echo $prompt | codex exec --dangerously-bypass-approvals-and-sandbox -
 done
 
 cat << "EOF"
