@@ -3,6 +3,32 @@ import { bg, clear, cursor, drawBox, fg, pad, style, styled, truncate } from "./
 import { calculateLayout } from "./layout.js";
 
 const STREAM_CURSOR = "█";
+const HELP_OVERLAY_WIDTH = 48;
+const HELP_OVERLAY_HEIGHT = 24;
+const HELP_OVERLAY_LINES: Array<{ text: string; tone?: "header" | "hint" }> = [
+	{ text: "  NORMAL MODE", tone: "header" },
+	{ text: "  ?           Show this help" },
+	{ text: "  q, Ctrl+c   Quit" },
+	{ text: "  j, ↓        Move down" },
+	{ text: "  k, ↑        Move up" },
+	{ text: "  G           Jump to last chat" },
+	{ text: "  i, a        Enter insert mode" },
+	{ text: "  h           Focus chat list" },
+	{ text: "  l           Focus messages" },
+	{ text: "  Tab         Focus next panel" },
+	{ text: "  Shift+Tab   Focus previous panel" },
+	{ text: "  Ctrl+d      Scroll messages down" },
+	{ text: "  Ctrl+u      Scroll messages up" },
+	{ text: "" },
+	{ text: "  INSERT MODE", tone: "header" },
+	{ text: "  Esc         Return to normal mode" },
+	{ text: "  Enter       Send message" },
+	{ text: "  Ctrl+Enter  Insert newline" },
+	{ text: "  Backspace   Delete character" },
+	{ text: "  Ctrl+w      Delete word" },
+	{ text: "  Ctrl+u      Clear input" },
+	{ text: "           Press ? or Esc to close", tone: "hint" },
+];
 
 function borderStyleForFocus(current: FocusArea, target: FocusArea): string {
 	return current === target ? fg.green : fg.gray;
@@ -169,6 +195,43 @@ function renderInput(state: TuiState): { output: string; cursorRow: number; curs
 	return { output: parts.join(""), cursorRow, cursorCol };
 }
 
+function renderHelpOverlay(state: TuiState): string {
+	const { rows, cols } = state.screenSize;
+	const width = Math.min(HELP_OVERLAY_WIDTH, cols);
+	const height = Math.min(HELP_OVERLAY_HEIGHT, rows);
+
+	if (width < 4 || height < 4) {
+		return "";
+	}
+
+	const row = Math.max(1, Math.floor((rows - height) / 2) + 1);
+	const col = Math.max(1, Math.floor((cols - width) / 2) + 1);
+	const innerWidth = width - 2;
+	const innerHeight = height - 2;
+	const parts: string[] = [];
+
+	parts.push(drawBox(row, col, width, height, { title: "Help", style: fg.cyan }));
+
+	const lines = HELP_OVERLAY_LINES.slice(0, innerHeight);
+	for (let index = 0; index < lines.length; index += 1) {
+		const line = lines[index];
+		if (!line) {
+			continue;
+		}
+		const truncated = truncate(line.text, innerWidth, "");
+		const padded = pad(truncated, innerWidth);
+		let rendered = padded;
+		if (line.tone === "header") {
+			rendered = styled(padded, style.bold, fg.cyan);
+		} else if (line.tone === "hint") {
+			rendered = styled(padded, style.dim, fg.gray);
+		}
+		parts.push(`${cursor.moveTo(row + 1 + index, col + 1)}${rendered}`);
+	}
+
+	return parts.join("");
+}
+
 export function render(state: TuiState): string {
 	const layout = calculateLayout(state.screenSize.rows, state.screenSize.cols);
 	const output: string[] = [];
@@ -182,6 +245,10 @@ export function render(state: TuiState): string {
 
 	const inputRender = renderInput(state);
 	output.push(inputRender.output);
+
+	if (state.showHelp) {
+		output.push(renderHelpOverlay(state));
+	}
 
 	if (state.mode === "insert") {
 		output.push(cursor.moveTo(inputRender.cursorRow, inputRender.cursorCol), cursor.show);

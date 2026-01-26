@@ -84,6 +84,25 @@ describe("render", () => {
 		expect(output).toContain("> Hello");
 	});
 
+	test("renders help overlay content when enabled", () => {
+		const output = stripAnsi(
+			render(buildState({ showHelp: true, screenSize: { rows: 30, cols: 80 } }))
+		);
+
+		expect(output).toContain("Help");
+		expect(output).toContain("NORMAL MODE");
+		expect(output).toContain("INSERT MODE");
+		expect(output).toContain("Press ? or Esc to close");
+	});
+
+	test("does not render help overlay when disabled", () => {
+		const output = stripAnsi(
+			render(buildState({ showHelp: false, screenSize: { rows: 30, cols: 80 } }))
+		);
+
+		expect(output).not.toContain("Press ? or Esc to close");
+	});
+
 	test("toggles cursor visibility by mode", () => {
 		const normal = render(buildState({ mode: "normal" }));
 		const insert = render(buildState({ mode: "insert" }));
