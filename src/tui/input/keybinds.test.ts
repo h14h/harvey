@@ -37,6 +37,16 @@ describe("resolveKeybind", () => {
 			actions: [],
 			commands: [{ type: "QUIT" }],
 		});
+		expect(
+			resolveKeybind(buildEvent({ name: "char", char: "?" }), "normal", DEFAULT_BINDINGS)
+		).toEqual({
+			actions: [{ type: "TOGGLE_HELP" }],
+			commands: [],
+		});
+		expect(resolveKeybind(buildEvent({ name: "escape" }), "normal", DEFAULT_BINDINGS)).toEqual({
+			actions: [{ type: "TOGGLE_HELP" }],
+			commands: [],
+		});
 	});
 
 	test("handles normal mode navigation and focus", () => {
@@ -171,6 +181,12 @@ describe("resolveKeybind", () => {
 			resolveKeybind(buildEvent({ name: "char", char: "A" }), "insert", DEFAULT_BINDINGS)
 		).toEqual({
 			actions: [{ type: "INSERT_CHAR", char: "A" }],
+			commands: [],
+		});
+		expect(
+			resolveKeybind(buildEvent({ name: "char", char: "?" }), "insert", DEFAULT_BINDINGS)
+		).toEqual({
+			actions: [{ type: "INSERT_CHAR", char: "?" }],
 			commands: [],
 		});
 	});

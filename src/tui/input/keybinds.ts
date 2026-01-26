@@ -100,6 +100,14 @@ export function resolveKeybind(
 }
 
 export const DEFAULT_BINDINGS: KeyBinding[] = [
+	actionBinding(
+		withMode("normal", (event) => isChar(event, "?")),
+		[{ type: "TOGGLE_HELP" }]
+	),
+	actionBinding(
+		withMode("normal", (event) => isKey(event, "escape")),
+		[{ type: "TOGGLE_HELP" }]
+	),
 	commandBinding(
 		withMode("normal", (event) => isChar(event, "q")),
 		[{ type: "QUIT" }]
