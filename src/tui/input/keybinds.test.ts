@@ -28,6 +28,12 @@ describe("resolveKeybind", () => {
 			commands: [{ type: "QUIT" }],
 		});
 		expect(
+			resolveKeybind(buildEvent({ name: "char", char: "n" }), "normal", DEFAULT_BINDINGS)
+		).toEqual({
+			actions: [],
+			commands: [{ type: "CREATE_CHAT" }],
+		});
+		expect(
 			resolveKeybind(
 				buildEvent({ name: "char", char: "c", ctrl: true }),
 				"normal",

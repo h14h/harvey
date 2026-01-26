@@ -116,6 +116,10 @@ export const DEFAULT_BINDINGS: KeyBinding[] = [
 		withMode("normal", (event) => isChar(event, "c", { ctrl: true })),
 		[{ type: "QUIT" }]
 	),
+	commandBinding(
+		withMode("normal", (event) => isChar(event, "n")),
+		[{ type: "CREATE_CHAT" }]
+	),
 	actionBinding(
 		withMode("normal", (event) => isChar(event, "i")),
 		[

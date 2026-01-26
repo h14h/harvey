@@ -13,6 +13,7 @@ const HELP_OVERLAY_LINES: Array<{
 	{ text: "  NORMAL MODE", tone: "header" },
 	{ text: "  ?           Show this help" },
 	{ text: "  q, Ctrl+c   Quit" },
+	{ text: "  n           New chat" },
 	{ text: "  j, ↓        Move down" },
 	{ text: "  k, ↑        Move up" },
 	{ text: "  G           Jump to last chat" },
@@ -91,6 +92,7 @@ function renderChatList(state: TuiState): string {
 
 	const innerWidth = Math.max(0, region.width - 2);
 	const innerHeight = Math.max(0, region.height - 2);
+
 	for (let index = 0; index < innerHeight; index += 1) {
 		const chat = state.chats[index];
 		const isSelected = index === state.selectedChatIndex;

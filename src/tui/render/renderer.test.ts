@@ -92,6 +92,7 @@ describe("render", () => {
 		expect(output).toContain("Help");
 		expect(output).toContain("NORMAL MODE");
 		expect(output).toContain("INSERT MODE");
+		expect(output).toContain("n           New chat");
 		expect(output).toContain("Press ? or Esc to close");
 	});
 
