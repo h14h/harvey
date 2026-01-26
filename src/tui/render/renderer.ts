@@ -146,6 +146,88 @@ function formatMessageLine(
 	return `${styled(label, labelColor)} ${trimmedContent}`;
 }
 
+function wrapLine(text: string, width: number): string[] {
+	if (width <= 0) {
+		return [];
+	}
+
+	if (text.length === 0) {
+		return [""];
+	}
+
+	const lines: string[] = [];
+	let remaining = text;
+
+	while (remaining.length > width) {
+		const slice = remaining.slice(0, width + 1);
+		const lastSpace = slice.lastIndexOf(" ");
+		const lastTab = slice.lastIndexOf("\t");
+		const breakIndex = Math.max(lastSpace, lastTab);
+
+		if (breakIndex <= 0) {
+			lines.push(remaining.slice(0, width));
+			remaining = remaining.slice(width);
+			continue;
+		}
+
+		lines.push(remaining.slice(0, breakIndex));
+		remaining = remaining.slice(breakIndex + 1);
+	}
+
+	lines.push(remaining);
+	return lines;
+}
+
+function wrapText(text: string, width: number): string[] {
+	if (width <= 0) {
+		return [];
+	}
+
+	const lines: string[] = [];
+	for (const rawLine of text.split("\n")) {
+		if (rawLine.length === 0) {
+			lines.push("");
+			continue;
+		}
+
+		lines.push(...wrapLine(rawLine, width));
+	}
+
+	return lines;
+}
+
+function formatWrappedMessage(
+	label: string,
+	labelColor: string,
+	content: string,
+	width: number
+): string[] {
+	if (width <= 0) {
+		return [];
+	}
+
+	const labelWidth = label.length;
+	const contentWidth = width - labelWidth - 1;
+	if (contentWidth <= 0) {
+		return [truncate(label, width, "")];
+	}
+
+	const wrapped = wrapText(content, contentWidth);
+	if (wrapped.length === 0) {
+		return [formatMessageLine(label, labelColor, "", width)];
+	}
+
+	const rendered: string[] = [];
+	rendered.push(`${styled(label, labelColor)} ${truncate(wrapped[0] ?? "", contentWidth, "")}`);
+
+	const indent = " ".repeat(labelWidth + 1);
+	for (const line of wrapped.slice(1)) {
+		rendered.push(`${indent}${truncate(line, contentWidth, "")}`);
+	}
+
+	return rendered;
+}
+
 function renderMessages(state: TuiState): string {
 	const layout = calculateLayout(state.screenSize.rows, state.screenSize.cols);
 	const region = layout.messages;
@@ -182,13 +264,19 @@ function renderMessages(state: TuiState): string {
 	}
 
 	if (state.streaming.active && renderedLines < innerHeight) {
-		const streamingLine = formatMessageLine(
+		const streamingLines = formatWrappedMessage(
 			"AI:",
 			fg.green,
-			`${state.streaming.content.split("\n")[0] ?? ""}${STREAM_CURSOR}`,
+			`${state.streaming.content}${STREAM_CURSOR}`,
 			innerWidth
 		);
-		parts.push(`${cursor.moveTo(region.row + 1 + renderedLines, region.col + 1)}${streamingLine}`);
+		for (const line of streamingLines) {
+			if (renderedLines >= innerHeight) {
+				break;
+			}
+			parts.push(`${cursor.moveTo(region.row + 1 + renderedLines, region.col + 1)}${line}`);
+			renderedLines += 1;
+		}
 	}
 
 	if (state.error) {

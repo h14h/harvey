@@ -48,7 +48,9 @@ describe("render", () => {
 	});
 
 	test("shows empty chat list hint", () => {
-		const output = stripAnsi(render(buildState({ chats: [], selectedChatIndex: 0 })));
+		const output = stripAnsi(
+			render(buildState({ chats: [], selectedChatIndex: 0, screenSize: { rows: 12, cols: 80 } }))
+		);
 
 		expect(output).toContain("No chats yet");
 		expect(output).toContain("Press n to create one");
@@ -77,6 +79,20 @@ describe("render", () => {
 
 		expect(output).toContain("Thinking");
 		expect(output).toContain("█");
+	});
+
+	test("wraps streaming content to the messages width", () => {
+		const output = stripAnsi(
+			render(
+				buildState({
+					screenSize: { rows: 12, cols: 30 },
+					streaming: { active: true, content: "First second third fourth", chatId: 1 },
+				})
+			)
+		);
+
+		expect(output).toContain("AI: First second");
+		expect(output).toContain("    third fourth");
 	});
 
 	test("overlays error messages", () => {
