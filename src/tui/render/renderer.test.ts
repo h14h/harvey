@@ -110,6 +110,14 @@ describe("render", () => {
 		expect(output).not.toContain("Press ? or Esc to close");
 	});
 
+	test("keeps dismiss hint visible on small screens", () => {
+		const output = stripAnsi(
+			render(buildState({ showHelp: true, screenSize: { rows: 6, cols: 40 } }))
+		);
+
+		expect(output).toContain("Press ? or Esc to close");
+	});
+
 	test("toggles cursor visibility by mode", () => {
 		const normal = render(buildState({ mode: "normal" }));
 		const insert = render(buildState({ mode: "insert" }));

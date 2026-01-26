@@ -34,6 +34,27 @@ const HELP_OVERLAY_LINES: Array<{
 	{ text: "Press ? or Esc to close", tone: "hint", align: "center" },
 ];
 
+function selectHelpOverlayLines(innerHeight: number): typeof HELP_OVERLAY_LINES {
+	if (innerHeight <= 0) {
+		return [];
+	}
+
+	if (innerHeight >= HELP_OVERLAY_LINES.length) {
+		return HELP_OVERLAY_LINES;
+	}
+
+	const hintLine = HELP_OVERLAY_LINES[HELP_OVERLAY_LINES.length - 1];
+	if (!hintLine) {
+		return HELP_OVERLAY_LINES.slice(0, innerHeight);
+	}
+
+	if (innerHeight === 1) {
+		return [hintLine];
+	}
+
+	return [...HELP_OVERLAY_LINES.slice(0, innerHeight - 1), hintLine];
+}
+
 function borderStyleForFocus(current: FocusArea, target: FocusArea): string {
 	return current === target ? fg.green : fg.gray;
 }
@@ -216,7 +237,7 @@ function renderHelpOverlay(state: TuiState): string {
 
 	parts.push(drawBox(row, col, width, height, { title: "Help", style: fg.cyan }));
 
-	const lines = HELP_OVERLAY_LINES.slice(0, innerHeight);
+	const lines = selectHelpOverlayLines(innerHeight);
 	for (let index = 0; index < lines.length; index += 1) {
 		const line = lines[index];
 		if (!line) {
