@@ -38,6 +38,14 @@ describe("reducer", () => {
 		expect(prevFromChat.focus).toBe("input");
 	});
 
+	test("toggles help overlay state", () => {
+		const shown = applyAction(makeState({ showHelp: false }), { type: "TOGGLE_HELP" });
+		expect(shown.showHelp).toBe(true);
+
+		const hidden = applyAction(shown, { type: "TOGGLE_HELP" });
+		expect(hidden.showHelp).toBe(false);
+	});
+
 	test("sets chats and clamps selection", () => {
 		const state = makeState({ selectedChatIndex: 5 });
 		const next = applyAction(state, { type: "SET_CHATS", chats: sampleChats });

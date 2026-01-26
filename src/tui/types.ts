@@ -44,6 +44,7 @@ export interface MessageSummary {
 export interface TuiState {
 	mode: Mode;
 	focus: FocusArea;
+	showHelp: boolean;
 	chats: ChatSummary[];
 	selectedChatIndex: number;
 	messages: MessageSummary[];
@@ -67,6 +68,7 @@ export type Action =
 	| { type: "SET_FOCUS"; focus: FocusArea }
 	| { type: "FOCUS_NEXT" }
 	| { type: "FOCUS_PREV" }
+	| { type: "TOGGLE_HELP" }
 	| { type: "SET_CHATS"; chats: ChatSummary[] }
 	| { type: "SELECT_CHAT"; index: number }
 	| { type: "MOVE_SELECTION"; delta: number }

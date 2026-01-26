@@ -5,6 +5,7 @@ const FOCUS_ORDER: FocusArea[] = ["chat-list", "messages", "input"];
 export const INITIAL_STATE: TuiState = {
 	mode: "normal",
 	focus: "chat-list",
+	showHelp: false,
 	chats: [],
 	selectedChatIndex: 0,
 	messages: [],
@@ -53,6 +54,8 @@ export function reducer(state: TuiState, action: Action): TuiState {
 			const prevFocus = FOCUS_ORDER[prevIndex] ?? state.focus;
 			return { ...state, focus: prevFocus };
 		}
+		case "TOGGLE_HELP":
+			return { ...state, showHelp: !state.showHelp };
 		case "SET_CHATS": {
 			const nextIndex = clampIndex(state.selectedChatIndex, action.chats.length);
 			return { ...state, chats: action.chats, selectedChatIndex: nextIndex };
