@@ -5,7 +5,11 @@ import { calculateLayout } from "./layout.js";
 const STREAM_CURSOR = "█";
 const HELP_OVERLAY_WIDTH = 48;
 const HELP_OVERLAY_HEIGHT = 24;
-const HELP_OVERLAY_LINES: Array<{ text: string; tone?: "header" | "hint" }> = [
+const HELP_OVERLAY_LINES: Array<{
+	text: string;
+	tone?: "header" | "hint";
+	align?: "left" | "center";
+}> = [
 	{ text: "  NORMAL MODE", tone: "header" },
 	{ text: "  ?           Show this help" },
 	{ text: "  q, Ctrl+c   Quit" },
@@ -27,7 +31,7 @@ const HELP_OVERLAY_LINES: Array<{ text: string; tone?: "header" | "hint" }> = [
 	{ text: "  Backspace   Delete character" },
 	{ text: "  Ctrl+w      Delete word" },
 	{ text: "  Ctrl+u      Clear input" },
-	{ text: "           Press ? or Esc to close", tone: "hint" },
+	{ text: "Press ? or Esc to close", tone: "hint", align: "center" },
 ];
 
 function borderStyleForFocus(current: FocusArea, target: FocusArea): string {
@@ -219,7 +223,7 @@ function renderHelpOverlay(state: TuiState): string {
 			continue;
 		}
 		const truncated = truncate(line.text, innerWidth, "");
-		const padded = pad(truncated, innerWidth);
+		const padded = pad(truncated, innerWidth, line.align ?? "left");
 		let rendered = padded;
 		if (line.tone === "header") {
 			rendered = styled(padded, style.bold, fg.cyan);

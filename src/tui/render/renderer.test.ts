@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { INITIAL_STATE } from "../state/reducer.js";
 import type { TuiState } from "../types.js";
-import { cursor } from "./ansi.js";
+import { cursor, fg } from "./ansi.js";
 import { render } from "./renderer.js";
 
 function buildState(overrides: Partial<TuiState>): TuiState {
@@ -93,6 +93,13 @@ describe("render", () => {
 		expect(output).toContain("NORMAL MODE");
 		expect(output).toContain("INSERT MODE");
 		expect(output).toContain("Press ? or Esc to close");
+	});
+
+	test("centers the help overlay for standard screen sizes", () => {
+		const output = render(buildState({ showHelp: true, screenSize: { rows: 30, cols: 80 } }));
+
+		const expectedTopLeft = `${cursor.moveTo(4, 17)}${fg.cyan}+`;
+		expect(output).toContain(expectedTopLeft);
 	});
 
 	test("does not render help overlay when disabled", () => {
