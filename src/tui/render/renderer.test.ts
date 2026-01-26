@@ -47,6 +47,13 @@ describe("render", () => {
 		expect(output).toContain("> Chat Beta");
 	});
 
+	test("shows empty chat list hint", () => {
+		const output = stripAnsi(render(buildState({ chats: [], selectedChatIndex: 0 })));
+
+		expect(output).toContain("No chats yet");
+		expect(output).toContain("Press n to create one");
+	});
+
 	test("renders message role labels", () => {
 		const output = render(
 			buildState({

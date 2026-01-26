@@ -93,6 +93,24 @@ function renderChatList(state: TuiState): string {
 	const innerWidth = Math.max(0, region.width - 2);
 	const innerHeight = Math.max(0, region.height - 2);
 
+	if (state.chats.length === 0) {
+		const hintLines = ["No chats yet", "Press n to create one"];
+		const startOffset = Math.max(0, Math.floor((innerHeight - hintLines.length) / 2));
+		const visibleCount = Math.min(innerHeight, hintLines.length);
+
+		for (let index = 0; index < visibleCount; index += 1) {
+			const text = hintLines[index] ?? "";
+			const truncated = truncate(text, innerWidth, "");
+			const padded = pad(truncated, innerWidth, "center");
+			const rendered = styled(padded, style.dim, fg.gray);
+			parts.push(
+				`${cursor.moveTo(region.row + 1 + startOffset + index, region.col + 1)}${rendered}`
+			);
+		}
+
+		return parts.join("");
+	}
+
 	for (let index = 0; index < innerHeight; index += 1) {
 		const chat = state.chats[index];
 		const isSelected = index === state.selectedChatIndex;
