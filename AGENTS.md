@@ -21,6 +21,7 @@ IMPORTANT:
     3. Push main repo
     4. Push wiki submodule
 - ALWAYS limit your work to one or more specific github issue labels
+- ONLY WORK ON OPEN GITHUB ISSUES
 - If one or more github issue labels are not provided, ASK FOR THEM
 - If there are no issues with a particular label, stop working
 - If the only issue with one of the labels provided also has a "PROMPT" label,
