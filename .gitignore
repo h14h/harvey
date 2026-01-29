@@ -6,6 +6,7 @@ out
 dist
 *.tgz
 
+
 # code coverage
 coverage
 *.lcov
@@ -26,6 +27,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .eslintcache
 .cache
 *.tsbuildinfo
+
+
+# sprites
+.sprite
 
 # IntelliJ based IDEs
 .idea
